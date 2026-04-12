@@ -1,0 +1,16 @@
+node_modules/
+.env
+wallet/
+!wallet/.gitkeep
+*.tar.gz
+channel-artifacts/
+crypto-config/
+organization/
+.next/
+out/
+coverage/
+.nyc_output/
+dist/
+build/
+*.log
+.DS_Store
