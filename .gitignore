@@ -14,3 +14,5 @@ dist/
 build/
 *.log
 .DS_Store
+*:Zone.Identifier
+deepseek_text_*

@@ -10,7 +10,7 @@ const ENTITY_CHAIN = {
   rmu: 'pengepul',
   distributor: 'rmu',
   bulog: 'distributor',
-  retailer: 'bulog',
+  retailer: ['bulog', 'distributor'],
 };
 
 const SNI_THRESHOLDS = {
@@ -53,26 +53,32 @@ function mockCreateBatch(batchId, entityType, dataJson, validateSNI) {
       throw new Error(`Previous batch ${data.prev_batch_id} does not exist`);
     }
     const expectedPrevType = ENTITY_CHAIN[entityType];
-    if (prevBatch.entityType !== expectedPrevType) {
+    if (Array.isArray(expectedPrevType)) {
+      if (!expectedPrevType.includes(prevBatch.entityType)) {
+        throw new Error(`${entityType} batch must link to a ${expectedPrevType.join(' or ')} batch`);
+      }
+    } else if (prevBatch.entityType !== expectedPrevType) {
       throw new Error(`${entityType} batch must link to a ${expectedPrevType} batch`);
     }
   }
 
   if (validateSNI) {
     const errors = [];
-    if (parseFloat(data.derajat_sosoh) < SNI_THRESHOLDS.derajat_sosoh.min) {
-      errors.push(`Derajat sosoh harus >= ${SNI_THRESHOLDS.derajat_sosoh.min}%`);
-    }
-    if (parseFloat(data.kadar_air) > SNI_THRESHOLDS.kadar_air.max) {
+    if (data.kadar_air == null) {
+      errors.push('Kadar air wajib diisi');
+    } else if (parseFloat(data.kadar_air) > SNI_THRESHOLDS.kadar_air.max) {
       errors.push(`Kadar air harus <= ${SNI_THRESHOLDS.kadar_air.max}%`);
     }
-    if (parseFloat(data.butir_kepala) < SNI_THRESHOLDS.butir_kepala.min) {
+    if (data.derajat_sosoh != null && parseFloat(data.derajat_sosoh) < SNI_THRESHOLDS.derajat_sosoh.min) {
+      errors.push(`Derajat sosoh harus >= ${SNI_THRESHOLDS.derajat_sosoh.min}%`);
+    }
+    if (data.butir_kepala != null && parseFloat(data.butir_kepala) < SNI_THRESHOLDS.butir_kepala.min) {
       errors.push(`Butir kepala harus >= ${SNI_THRESHOLDS.butir_kepala.min}%`);
     }
-    if (parseFloat(data.butir_patah) > SNI_THRESHOLDS.butir_patah.max) {
+    if (data.butir_patah != null && parseFloat(data.butir_patah) > SNI_THRESHOLDS.butir_patah.max) {
       errors.push(`Butir patah harus <= ${SNI_THRESHOLDS.butir_patah.max}%`);
     }
-    if (parseFloat(data.butir_menir) > SNI_THRESHOLDS.butir_menir.max) {
+    if (data.butir_menir != null && parseFloat(data.butir_menir) > SNI_THRESHOLDS.butir_menir.max) {
       errors.push(`Butir menir harus <= ${SNI_THRESHOLDS.butir_menir.max}%`);
     }
     if (errors.length > 0) {

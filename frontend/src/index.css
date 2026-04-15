@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 90 20% 98%;
+    --foreground: 150 30% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 30% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 30% 10%;
+    --primary: 142 50% 32%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 45% 92%;
+    --secondary-foreground: 35 60% 25%;
+    --muted: 90 15% 94%;
+    --muted-foreground: 150 10% 45%;
+    --accent: 40 60% 50%;
+    --accent-foreground: 40 80% 15%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 90 15% 88%;
+    --input: 90 15% 88%;
+    --ring: 142 50% 32%;
+    --radius: 0.75rem;
+    --sidebar-background: 142 30% 97%;
+    --sidebar-foreground: 150 30% 15%;
+    --sidebar-primary: 142 50% 32%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 142 20% 92%;
+    --sidebar-accent-foreground: 150 30% 15%;
+    --sidebar-border: 90 15% 88%;
+    --sidebar-ring: 142 50% 32%;
+    --gold: 42 80% 55%;
+    --gold-foreground: 42 80% 15%;
+    --leaf: 120 40% 45%;
+    --leaf-foreground: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Playfair Display', serif;
+  }
+  .text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--leaf)));
+  }
+  .glass {
+    background-color: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s ease-out both;
+}
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }

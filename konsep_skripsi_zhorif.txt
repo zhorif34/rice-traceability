@@ -1,0 +1,143 @@
+Saya Akan membuat sistem traceability beras berbasis blockchain dimulai
+dari tahap produksi di tingkat entitas petani.
+
+Pada tahap awal, web akan menampilkan halaman login. Pengguna akan
+membuat akun dengan mendaftarkkan email dan password serta memilih
+entitas mereka. Entitas tersebut adalah petani, pengepul, RMU (Rice
+Milling Unit), distributor beras, bulog, dan retailer. Setelah pengguna
+membuat akun, maka pengguna dapat login ke web.
+
+Pada tahap awal, petani atau pihak yang berwenang melakukan input data
+awal melalui sistem, yang meliputi Lokasi GPS sawah/lahan, luas area
+(Ha), jenis tanah, riwayat penggunaan pupuk/pestisida. Tanggal tanam,
+varietas benih, sumber benih, pestisida yang digunakan. Tanggal panen,
+volume gabah kering guna (GKG, kg), hasil panen/Ha. Data yang dimasukkan
+kemudian diproses dan divalidasi oleh backend sistem. Setelah dinyatakan
+valid, data produksi tersebut disimpan dalam basis data sistem dan
+dicatat ke dalam blockchain sebagai identitas awal beras yang bersifat
+permanen dan tidak dapat diubah. Kemudian sistem akan generate Batch ID
+dari input tersebut.
+
+Selanjutnya, pada tahap entitas pengepul, pengepul melakukan input batch
+ID dari petani. Kemudian pengepul memasukkan data Nomor pengiriman,
+volume GKG diterima (kg), asal petani/lokasi, tanggal pengiriman.
+Backend kembali melakukan validasi dan mencatat input data ke blockchain
+untuk menjaga integritas dan keaslian informasi pada tahap ini. Setelah
+itu, sistem akan generate Batch ID dari Pengepul.
+
+Setelah itu, pada tahap entitas RMU (Rice Milling Unit), RMU akan
+memasukkan Batch ID dari pengepul. RMU lalu memasukkan data Volume GKG
+masuk (kg), nomor batch dari pengepul, kadar air masuk, pemeriksaan
+visual/kualitas awal, tanggal penerimaan, supplier ID. Jenis kemasan
+(karung), berat netto, tanggal pengemasan, nomor batch beras. Sertifikat
+mutu SNI Yang digunakan. Lalu pada RMU terdapat pengisian data
+berdasarkan SNI, yaitu Derajat sosoh (%), kadar air beras (%), butir
+kelapa (%), butih patah (%), butir menir (%). Diketahui Derajat sosoh
+harus lebih dari 95%, kadar air beras harus kurang dari 14 %, butir
+kepala harus lebih dari 75 %, butih patah harus kurang dari 22%, butir
+menir harus kurang dari 3%. Jika data tersebut tidak cocok maka data
+tersebut tidak divalidasi dan tidak dicatat ke blockchain, serta RMU
+harus melakukan koreksi data SNI. pada entitas RMU, pengisian derajat sosoh (%), butir kelapa (%), butih patah (%), butir menir (%) tidak wajib untuk diisi. hanya kadar air saja yang wajib diisi. namun parameter SNI tetap berlaku. Jika data benar maka akan divalidasi
+dan dicatat ke blockchain. Setelah itu, sistem akan generate Batch ID
+dari RMU
+
+Tahap berikutnya adalah entitas distributor beras. Distributor beras
+memasukkan batch ID dari RMU lalu jika batch yang dimasukkan benar akan
+dilanjutkan dengan distributor yang memasukkan data Nomor PO (Purchase
+Order), volume beras dikirim (karung), tujuan pengiriman
+(Bulog/retailer), tanggal pengiriman. Data dari distributor tersebut
+dikaitkan dengan identitas batch beras yang telah terbentuk sebelumnya
+sehingga riwayat beras tetap terjaga secara berkelanjutan. Backend
+memproses dan mencatat data penggilingan ke dalam blockchain untuk
+memastikan bahwa informasi terkait kualitas dan proses pengolahan beras
+tidak dapat dimanipulasi. Setelah itu, sistem akan generate Batch ID
+dari distributor beras.
+
+Setelah proses pada entitas ditributor maka dilanjutkan dengan
+pengisisan data oleh entitas Bulog. Bulog terlebih dahulu memasukkan
+batch ID dari distributor lalu jika batch yang dimasukkan benar akan
+dilanjutkan. Pada tahap entitas bulog, bulog mengisi Nomor PO (Purchase
+Order), volume dibeli (ton), harga satuan (Rp/kg), mutu beras (SNI),
+nomor gudang penerimaan, tanggal pembelian dari RMU/distributor. Nomor
+SO (Sales Order), volume dijual (ton), penerima (distributor/retailer),
+tanggal pengiriman dari gudang. Data dari Bulog tersebut dikaitkan
+dengan identitas batch beras yang telah terbentuk sebelumnya sehingga
+riwayat beras tetap terjaga secara berkelanjutan. Backend memproses dan
+mencatat data penggilingan ke dalam blockchain untuk memastikan bahwa
+informasi terkait kualitas dan proses pengolahan beras tidak dapat
+dimanipulasi. Setelah itu, sistem akan generate Batch ID adri bulog.
+
+Selanjutnya, pada tahap entitas Retailer. Retailer dapat memasukkan
+batch ID dari bulog atau langsung dari Distributor lalu jika batch yang
+dimasukkan benar akan dilanjutkan dengan entitas retailer yang
+memasukkan data Nomor invoice dari distributor/Bulog, volume dibeli
+(karung), tanggal terima, nomor batch beras, harga eceran, tanggal
+penjualan. Selain itu, tambahkan juga checklis berupa Keterangan Berat
+bersih, logo halal, keterangan nama dan alamat produsen, tanggal
+kadaluarsa pada pengisian data Retailer. Setiap aktivitas distribusi
+dicatat dan direkam ke dalam blockchain untuk memastikan transparansi
+alur distribusi beras serta memudahkan pengawasan pergerakan beras dari
+gudang hingga ke tujuan akhir. Setelah itu, sistem akan generate Batch
+ID dari retailer, yang kemudiaan batch ID tersebut akan diproses ke
+proses generate QR Qode untuk pengguna.
+
+Setelah seluruh data dari tahap petani hingga retailer tercatat, sistem
+secara otomatis menghasilkan QR Code untuk setiap karung beras. QR Code
+tersebut berisi identitas unik atau pointer yang terhubung ke data
+traceability yang tersimpan di blockchain. QR Code kemudian dicetak dan
+ditempelkan pada setiap karung beras sebagai identitas digital produk.
+Ketika QR Code dipindai oleh konsumen, distributor, atau pihak pengawas,
+sistem akan mengambil data traceability dari blockchain melalui backend
+dan menampilkan informasi lengkap mengenai data yang telah diinput dari
+petani hingga retailer.
+
+Selain itu, Terdapat dashboard Admin yang akan menampilkan keseluruhan
+batch ID yang telah dimasukkan setiap entitas. Admin juga dapat melihat
+ketelusuran produk dari setiap Batch ID. Hal tersebut dilakukan agar
+admin dapat mengamati kesalahan input atau anomali yang dimasukkan oleh
+setiap entitas. Admin tidak berhak mengubah data, namunhanya melihat
+data traceability.
+
+NOTES: Pada sistem aplikasi berbasis web tersebut akan digunakan
+hyperledger fabric. Sebelum mengisi data, setiap entitas harus
+mengisikan Batch ID dari setiap entitas sebelumnya secara manual (misal:
+Pengepul ingin mengisi data, maka pengepul harus mengisi Batch ID dari
+Petani). Sistem login tidak bisa menggunakan email yang sama.
+
+1.  Petani: Lokasi GPS sawah/lahan, luas area (Ha), jenis tanah, riwayat
+    penggunaan pupuk/pestisida. Tanggal tanam, varietas benih, sumber
+    benih, pestisida yang digunakan. Tanggal panen, volume gabah kering
+    guna (GKG, kg), hasil panen/Ha
+
+2.  Pengepul: melakukan input batch ID dari petani. Kemudian pengepul
+    memasukkan data Nomor pengiriman, volume GKG diterima (kg), asal
+    petani/lokasi, tanggal pengiriman.
+
+3.  RMU: memasukkan Batch ID dari pengepul. RMU lalu memasukkan data
+    Volume GKG masuk (kg), nomor batch dari pengepul, kadar air masuk,
+    pemeriksaan visual/kualitas awal, tanggal penerimaan, supplier ID.
+    Jenis kemasan (karung), berat netto, tanggal pengemasan, nomor batch
+    beras. Sertifikat mutu SNI Yang digunakan. Lalu pada RMU terdapat
+    pengisian data berdasarkan SNI, yaitu Derajat sosoh (%), kadar air
+    beras (%), butir kelapa (%), butih patah (%), butir menir (%).
+
+4.  Distributor beras: memasukkan batch ID dari RMU lalu jika batch yang
+    dimasukkan benar akan dilanjutkan dengan distributor yang memasukkan
+    data Nomor PO (Purchase Order), volume beras dikirim (karung),
+    tujuan pengiriman (Bulog/retailer), tanggal pengiriman.
+
+5.  Bulog: memasukkan batch ID dari distributor lalu jika batch yang
+    dimasukkan benar akan dilanjutkan. Pada tahap entitas bulog, bulog
+    mengisi Nomor PO (Purchase Order), volume dibeli (ton), harga satuan
+    (Rp/kg), mutu beras (SNI), nomor gudang penerimaan, tanggal
+    pembelian dari RMU/distributor. Nomor SO (Sales Order), volume
+    dijual (ton), penerima (distributor/retailer), tanggal pengiriman
+    dari gudang.
+
+6.  Retailer: memasukkan batch ID dari bulog lalu jika batch yang
+    dimasukkan benar akan dilanjutkan dengan entitas retailer yang
+    memasukkan data Nomor invoice dari distributor/Bulog, volume dibeli
+    (karung), tanggal terima, nomor batch beras, harga eceran, tanggal
+    penjualan. Selain itu, tambahkan juga checklis berupa Keterangan
+    Berat bersih, logo halal, keterangan nama dan alamat produsen,
+    tanggal kadaluarsa pada pengisian data Retailer

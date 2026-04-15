@@ -12,6 +12,7 @@ const distributorRoutes = require('./routes/distributor');
 const bulogRoutes = require('./routes/bulog');
 const retailerRoutes = require('./routes/retailer');
 const traceabilityRoutes = require('./routes/traceability');
+const adminRoutes = require('./routes/admin');
 const { connectDB } = require('./config/database');
 
 const app = express();
@@ -28,6 +29,7 @@ app.use('/api/distributor', distributorRoutes);
 app.use('/api/bulog', bulogRoutes);
 app.use('/api/retailer', retailerRoutes);
 app.use('/api/traceability', traceabilityRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

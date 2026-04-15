@@ -10,7 +10,7 @@ const router = Router();
 
 router.post('/batch', authMiddleware, roleGuard('petani'), async (req, res) => {
   try {
-    const required = ['lokasi_gps', 'luas_area_ha', 'jenis_tanah', 'tanggal_tanam', 'varietas_benih', 'tanggal_panen', 'volume_gkg_kg'];
+    const required = ['lokasi_gps', 'luas_area_ha', 'jenis_tanah', 'riwayat_pupuk_pestisida', 'tanggal_tanam', 'varietas_benih', 'sumber_benih', 'pestisida', 'tanggal_panen', 'volume_gkg_kg', 'hasil_panen_per_ha'];
     validateRequiredFields(req.body, required);
 
     const batchId = `FARMER_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;

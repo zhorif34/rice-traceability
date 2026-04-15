@@ -186,8 +186,8 @@ class RiceTraceabilityContract extends Contract {
     }
 
     const prevBatchObj = JSON.parse(prevBatch.toString());
-    if (prevBatchObj.entityType !== 'bulog') {
-      throw new Error('Retailer batch must link to a Bulog batch');
+    if (prevBatchObj.entityType !== 'bulog' && prevBatchObj.entityType !== 'distributor') {
+      throw new Error('Retailer batch must link to a Bulog or Distributor batch');
     }
 
     const batch = {
