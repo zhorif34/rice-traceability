@@ -43,8 +43,8 @@ const Register = () => {
         <img src="/images/hero-rice.jpg" alt="Sawah padi" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center">
           <div className="text-center p-8">
-            <h2 className="font-display text-4xl font-bold text-background mb-4">Gabung Jaringan</h2>
-            <p className="text-background/70 text-lg max-w-md">Daftar sebagai pemangku kepentingan dan mulai melacak beras.</p>
+            <h2 className="font-display text-4xl font-bold text-white mb-4">Gabung Jaringan</h2>
+            <p className="text-white text-lg max-w-md">Daftar sebagai pemangku kepentingan dan mulai melacak beras.</p>
           </div>
         </div>
       </div>

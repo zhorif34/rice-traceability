@@ -48,8 +48,8 @@ const Login = () => {
         <img src="/images/hero-rice.jpg" alt="Sawah padi" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center">
           <div className="text-center p-8">
-            <h2 className="font-display text-4xl font-bold text-background mb-4">Selamat Datang Kembali</h2>
-            <p className="text-background/70 text-lg max-w-md">Akses dasbor Anda dan kelola data rantai pasok dengan aman.</p>
+            <h2 className="font-display text-4xl font-bold text-white mb-4">Selamat Datang Kembali</h2>
+            <p className="text-white text-lg max-w-md">Akses dasbor Anda dan kelola data rantai pasok dengan aman.</p>
           </div>
         </div>
       </div>
@@ -70,9 +70,9 @@ const Login = () => {
               </div>
             </div>
             <div className="space-y-2"><Label htmlFor="entity">Masuk sebagai</Label>
-              <Select value={entity} onValueChange={setEntity}><SelectTrigger><SelectValue placeholder="Pilih entitas Anda" /></SelectTrigger><SelectContent>{entities.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}</SelectContent></Select>
+              <Select value={entity} onValueChange={setEntity}><SelectTrigger><SelectValue placeholder="Pilih entitas Anda" /></SelectTrigger><SelectContent className="bg-white">{entities.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}</SelectContent></Select>
             </div>
-            <Button type="submit" className="w-full" size="lg" disabled={loading}>{loading ? "Memproses..." : "Masuk"}</Button>
+            <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white" size="lg" disabled={loading}>{loading ? "Memproses..." : "Masuk"}</Button>
           </form>
           <p className="text-center text-sm text-muted-foreground">Belum punya akun? <Link to="/register" className="text-primary font-medium hover:underline">Daftar di sini</Link></p>
         </div>

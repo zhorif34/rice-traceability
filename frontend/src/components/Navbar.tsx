@@ -18,8 +18,8 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-8">
           {links.map((l) => <Link key={l.to} to={l.to} className={`text-sm font-medium transition-colors hover:text-primary ${isActive(l.to) ? "text-primary" : "text-muted-foreground"}`}>{l.label}</Link>)}
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" asChild><Link to="/login">Masuk</Link></Button>
-            <Button size="sm" asChild><Link to="/register">Daftar</Link></Button>
+            <Button size="sm" className="bg-yellow-400 text-black hover:bg-yellow-500" asChild><Link to="/login">Masuk</Link></Button>
+            <Button size="sm" className="bg-green-800 text-white hover:bg-green-900" asChild><Link to="/register">Daftar</Link></Button>
           </div>
         </div>
         <button className="md:hidden text-foreground" onClick={() => setOpen(!open)}>{open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}</button>
@@ -28,8 +28,8 @@ const Navbar = () => {
         <div className="md:hidden glass border-t border-border px-4 pb-4 space-y-3">
           {links.map((l) => <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className={`block py-2 text-sm font-medium ${isActive(l.to) ? "text-primary" : "text-muted-foreground"}`}>{l.label}</Link>)}
           <div className="flex gap-3 pt-2">
-            <Button variant="ghost" size="sm" asChild><Link to="/login" onClick={() => setOpen(false)}>Masuk</Link></Button>
-            <Button size="sm" asChild><Link to="/register" onClick={() => setOpen(false)}>Daftar</Link></Button>
+            <Button size="sm" className="bg-yellow-400 text-black hover:bg-yellow-500" asChild><Link to="/login" onClick={() => setOpen(false)}>Masuk</Link></Button>
+            <Button size="sm" className="bg-green-800 text-white hover:bg-green-900" asChild><Link to="/register" onClick={() => setOpen(false)}>Daftar</Link></Button>
           </div>
         </div>
       )}

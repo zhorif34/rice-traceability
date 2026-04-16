@@ -1,9 +1,10 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import QrScanner from "@/components/QrScanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, QrCode, Sprout, Truck, Factory, Building2, Warehouse, ShoppingBag, CheckCircle2 } from "lucide-react";
+import { Search, QrCode, Camera, Keyboard, Sprout, Truck, Factory, Building2, Warehouse, ShoppingBag, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/services/api";
 
@@ -14,18 +15,35 @@ const Traceability = () => {
   const [batchId, setBatchId] = useState("");
   const [traceData, setTraceData] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [scanMode, setScanMode] = useState(false);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!batchId.trim()) return;
+  const fetchTrace = async (id: string) => {
+    if (!id.trim()) return;
     setLoading(true);
     try {
-      const res = await api.get(`/traceability/trace/${batchId.trim()}`);
+      const res = await api.get(`/traceability/trace/${id.trim()}`);
       setTraceData(res.data);
+      setBatchId(id.trim());
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Batch tidak ditemukan.");
       setTraceData(null);
     } finally { setLoading(false); }
+  };
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await fetchTrace(batchId);
+  };
+
+  const handleQrScan = async (decodedText: string) => {
+    setScanMode(false);
+    toast.success("QR Code terdeteksi!");
+    await fetchTrace(decodedText);
+  };
+
+  const handleScanError = (errorMessage: string) => {
+    toast.error(errorMessage);
+    setScanMode(false);
   };
 
   return (
@@ -37,10 +55,29 @@ const Traceability = () => {
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4"><span className="text-gradient">Keterlacakan</span> Beras</h1>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">Masukkan ID Batch atau pindai kode QR untuk melihat perjalanan rantai pasok.</p>
           </div>
-          <form onSubmit={handleSearch} className="max-w-lg mx-auto flex gap-3 mb-16 animate-fade-up">
-            <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" /><Input placeholder="Masukkan ID Batch" className="pl-10 h-12" value={batchId} onChange={(e) => setBatchId(e.target.value)} /></div>
-            <Button type="submit" size="lg" className="h-12" disabled={loading}><QrCode className="w-5 h-5 mr-2" />{loading ? "..." : "Lacak"}</Button>
-          </form>
+
+          <div className="max-w-lg mx-auto mb-16 animate-fade-up">
+            <div className="flex gap-2 mb-4 justify-center">
+              <Button variant={scanMode ? "outline" : "default"} size="sm" onClick={() => setScanMode(false)} className={!scanMode ? "bg-green-800 text-white hover:bg-green-900" : ""}>
+                <Keyboard className="w-4 h-4 mr-2" />Input Manual
+              </Button>
+              <Button variant={scanMode ? "default" : "outline"} size="sm" onClick={() => setScanMode(true)} className={scanMode ? "bg-green-800 text-white hover:bg-green-900" : ""}>
+                <Camera className="w-4 h-4 mr-2" />Pindai QR
+              </Button>
+            </div>
+
+            {scanMode ? (
+              <div className="space-y-4">
+                <QrScanner onScan={handleQrScan} onError={handleScanError} />
+                <p className="text-center text-sm text-muted-foreground">Arahkan kamera ke kode QR pada kemasan beras</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSearch} className="flex gap-3">
+                <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" /><Input placeholder="Masukkan ID Batch" className="pl-10 h-12" value={batchId} onChange={(e) => setBatchId(e.target.value)} /></div>
+                <Button type="submit" size="lg" className="h-12 bg-green-800 text-white hover:bg-green-900" disabled={loading}><QrCode className="w-5 h-5 mr-2" />{loading ? "..." : "Lacak"}</Button>
+              </form>
+            )}
+          </div>
           {traceData && traceData.length > 0 && (
             <div className="max-w-2xl mx-auto animate-fade-up">
               <div className="glass rounded-xl p-6 mb-8">
