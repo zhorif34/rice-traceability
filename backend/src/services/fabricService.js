@@ -4,13 +4,22 @@ const MOCK_MODE = true;
 
 const mockStore = new Map();
 
-const ENTITY_CHAIN = {
+const ENTITY_ORDER = {
+  petani: 0,
+  pengepul: 1,
+  rmu: 2,
+  distributor: 3,
+  bulog: 4,
+  retailer: 5,
+};
+
+const ALLOWED_PREV = {
   petani: null,
-  pengepul: 'petani',
-  rmu: 'pengepul',
-  distributor: 'rmu',
-  bulog: 'distributor',
-  retailer: ['bulog', 'distributor'],
+  pengepul: ['petani'],
+  rmu: ['petani', 'pengepul'],
+  distributor: ['rmu'],
+  bulog: ['rmu', 'distributor'],
+  retailer: ['rmu', 'distributor', 'bulog'],
 };
 
 const SNI_THRESHOLDS = {
@@ -20,6 +29,30 @@ const SNI_THRESHOLDS = {
   butir_patah: { max: 22 },
   butir_menir: { max: 3 },
 };
+
+function getConsumersOfPrevBatch(prevBatchId) {
+  const consumers = [];
+  for (const batch of mockStore.values()) {
+    if (batch.data && batch.data.prev_batch_id === prevBatchId) {
+      consumers.push(batch);
+    }
+  }
+  return consumers;
+}
+
+function checkJumpBlock(prevBatchId, currentEntityType) {
+  const consumers = getConsumersOfPrevBatch(prevBatchId);
+  const currentOrder = ENTITY_ORDER[currentEntityType];
+
+  for (const consumer of consumers) {
+    const consumerOrder = ENTITY_ORDER[consumer.entityType];
+    if (consumerOrder > currentOrder) {
+      return consumer.entityType;
+    }
+  }
+
+  return null;
+}
 
 function mockSubmitTransaction(fnName, ...args) {
   switch (fnName) {
@@ -46,20 +79,28 @@ function mockCreateBatch(batchId, entityType, dataJson, validateSNI) {
   }
 
   const data = JSON.parse(dataJson);
+  const allowedPrevTypes = ALLOWED_PREV[entityType];
 
   if (data.prev_batch_id) {
     const prevBatch = mockStore.get(data.prev_batch_id);
     if (!prevBatch) {
       throw new Error(`Previous batch ${data.prev_batch_id} does not exist`);
     }
-    const expectedPrevType = ENTITY_CHAIN[entityType];
-    if (Array.isArray(expectedPrevType)) {
-      if (!expectedPrevType.includes(prevBatch.entityType)) {
-        throw new Error(`${entityType} batch must link to a ${expectedPrevType.join(' or ')} batch`);
-      }
-    } else if (prevBatch.entityType !== expectedPrevType) {
-      throw new Error(`${entityType} batch must link to a ${expectedPrevType} batch`);
+
+    if (!allowedPrevTypes || !allowedPrevTypes.includes(prevBatch.entityType)) {
+      const allowed = allowedPrevTypes ? allowedPrevTypes.join(' atau ') : 'tidak ada';
+      throw new Error(`Batch ${entityType} harus terhubung dengan batch ${allowed}. Ditemukan: ${prevBatch.entityType}`);
     }
+
+    const blockedBy = checkJumpBlock(data.prev_batch_id, entityType);
+    if (blockedBy) {
+      throw new Error(
+        `Batch ID ${data.prev_batch_id} sudah digunakan oleh entitas ${blockedBy} yang lebih tinggi. ` +
+        `Entitas ${entityType} tidak dapat menggunakan batch ini karena sudah dilewati (melompat).`
+      );
+    }
+  } else if (allowedPrevTypes) {
+    throw new Error(`Batch ${entityType} wajib memiliki prev_batch_id dari ${allowedPrevTypes.join(' atau ')}`);
   }
 
   if (validateSNI) {

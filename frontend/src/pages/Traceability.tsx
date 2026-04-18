@@ -53,7 +53,11 @@ const Traceability = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 animate-fade-up">
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4"><span className="text-gradient">Keterlacakan</span> Beras</h1>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">Masukkan ID Batch atau pindai kode QR untuk melihat perjalanan rantai pasok.</p>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">Masukkan ID Batch atau pindai kode QR untuk melihat perjalanan rantai pasok beras Anda.</p>
+            <p className="text-muted-foreground text-sm max-w-lg mx-auto mt-3">
+              Konsumen dapat menelusuri beras yang dibeli dari <span className="font-semibold text-primary">Distributor</span>, <span className="font-semibold text-primary">Bulog</span>, atau <span className="font-semibold text-primary">Pengecer</span>.
+              Gunakan <span className="font-medium">Input Manual</span> untuk batch dari Distributor/Bulog, atau <span className="font-medium">Pindai QR</span> untuk beras dari Pengecer.
+            </p>
           </div>
 
           <div className="max-w-lg mx-auto mb-16 animate-fade-up">

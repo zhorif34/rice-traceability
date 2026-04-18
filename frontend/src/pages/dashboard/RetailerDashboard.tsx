@@ -36,7 +36,7 @@ const RetailerDashboard = () => {
   return (
     <DashboardLayout title="Dasbor Pengecer" entityLabel="Pengecer">
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Card><CardHeader><CardTitle>Batch ID dari Bulog/Distributor</CardTitle></CardHeader><CardContent><div className="space-y-2"><Label>ID Batch</Label><Input value={prevBatchId} onChange={e => setPrevBatchId(e.target.value)} required /></div></CardContent></Card>
+        <Card><CardHeader><CardTitle>Batch ID dari RMU/Distributor/Bulog</CardTitle></CardHeader><CardContent><div className="space-y-2"><Label>ID Batch (RMU, Distributor, atau Bulog)</Label><Input placeholder="cth. RMU_... / DISTRIBUTOR_... / BULOG_..." value={prevBatchId} onChange={e => setPrevBatchId(e.target.value)} required /></div></CardContent></Card>
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><ShoppingBag className="w-5 h-5 text-primary" />Data Pembelian & Penjualan</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2"><Label>Nomor Invoice</Label><Input value={purchase.invoice} onChange={e => setPurchase({ ...purchase, invoice: e.target.value })} required /></div>

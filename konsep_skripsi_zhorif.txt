@@ -8,8 +8,8 @@ Milling Unit), distributor beras, bulog, dan retailer. Setelah pengguna
 membuat akun, maka pengguna dapat login ke web.
 
 Pada tahap awal, petani atau pihak yang berwenang melakukan input data
-awal melalui sistem, yang meliputi Lokasi GPS sawah/lahan, luas area
-(Ha), jenis tanah, riwayat penggunaan pupuk/pestisida. Tanggal tanam,
+awal melalui sistem, yang meliputi Alamat lahan, luas area
+(Ha), riwayat penggunaan pupuk/pestisida. Tanggal tanam,
 varietas benih, sumber benih, pestisida yang digunakan. Tanggal panen,
 volume gabah kering guna (GKG, kg), hasil panen/Ha. Data yang dimasukkan
 kemudian diproses dan divalidasi oleh backend sistem. Setelah dinyatakan
@@ -26,7 +26,7 @@ untuk menjaga integritas dan keaslian informasi pada tahap ini. Setelah
 itu, sistem akan generate Batch ID dari Pengepul.
 
 Setelah itu, pada tahap entitas RMU (Rice Milling Unit), RMU akan
-memasukkan Batch ID dari pengepul. RMU lalu memasukkan data Volume GKG
+memasukkan Batch ID dari pengepul atau Petani. RMU lalu memasukkan data Volume GKG
 masuk (kg), nomor batch dari pengepul, kadar air masuk, pemeriksaan
 visual/kualitas awal, tanggal penerimaan, supplier ID. Jenis kemasan
 (karung), berat netto, tanggal pengemasan, nomor batch beras. Sertifikat
@@ -55,9 +55,9 @@ dari distributor beras.
 
 Setelah proses pada entitas ditributor maka dilanjutkan dengan
 pengisisan data oleh entitas Bulog. Bulog terlebih dahulu memasukkan
-batch ID dari distributor lalu jika batch yang dimasukkan benar akan
+batch ID dari distributor atau RMU lalu jika batch yang dimasukkan benar akan
 dilanjutkan. Pada tahap entitas bulog, bulog mengisi Nomor PO (Purchase
-Order), volume dibeli (ton), harga satuan (Rp/kg), mutu beras (SNI),
+Order), volume dibeli (ton), mutu beras (SNI),
 nomor gudang penerimaan, tanggal pembelian dari RMU/distributor. Nomor
 SO (Sales Order), volume dijual (ton), penerima (distributor/retailer),
 tanggal pengiriman dari gudang. Data dari Bulog tersebut dikaitkan
@@ -68,11 +68,11 @@ informasi terkait kualitas dan proses pengolahan beras tidak dapat
 dimanipulasi. Setelah itu, sistem akan generate Batch ID adri bulog.
 
 Selanjutnya, pada tahap entitas Retailer. Retailer dapat memasukkan
-batch ID dari bulog atau langsung dari Distributor lalu jika batch yang
+batch ID dari bulog atau RMU atau Distributor lalu jika batch yang
 dimasukkan benar akan dilanjutkan dengan entitas retailer yang
-memasukkan data Nomor invoice dari distributor/Bulog, volume dibeli
+memasukkan data Nomor invoice dari distributor/Bulog/RMU, volume dibeli
 (karung), tanggal terima, nomor batch beras, harga eceran, tanggal
-penjualan. Selain itu, tambahkan juga checklis berupa Keterangan Berat
+penjualan. Selain itu, tambahkan juga checklist berupa Keterangan Berat
 bersih, logo halal, keterangan nama dan alamat produsen, tanggal
 kadaluarsa pada pengisian data Retailer. Setiap aktivitas distribusi
 dicatat dan direkam ke dalam blockchain untuk memastikan transparansi
@@ -104,10 +104,13 @@ mengisikan Batch ID dari setiap entitas sebelumnya secara manual (misal:
 Pengepul ingin mengisi data, maka pengepul harus mengisi Batch ID dari
 Petani). Sistem login tidak bisa menggunakan email yang sama.
 
-1.  Petani: Lokasi GPS sawah/lahan, luas area (Ha), jenis tanah, riwayat
+
+Data yang dimasukkan ke Blockchain:
+
+1.  Petani: Alamat Lahan, luas area (Ha), riwayat
     penggunaan pupuk/pestisida. Tanggal tanam, varietas benih, sumber
     benih, pestisida yang digunakan. Tanggal panen, volume gabah kering
-    guna (GKG, kg), hasil panen/Ha
+    giling (GKG, kg), hasil panen/Ha
 
 2.  Pengepul: melakukan input batch ID dari petani. Kemudian pengepul
     memasukkan data Nomor pengiriman, volume GKG diterima (kg), asal
@@ -128,8 +131,7 @@ Petani). Sistem login tidak bisa menggunakan email yang sama.
 
 5.  Bulog: memasukkan batch ID dari distributor lalu jika batch yang
     dimasukkan benar akan dilanjutkan. Pada tahap entitas bulog, bulog
-    mengisi Nomor PO (Purchase Order), volume dibeli (ton), harga satuan
-    (Rp/kg), mutu beras (SNI), nomor gudang penerimaan, tanggal
+    mengisi Nomor PO (Purchase Order), volume dibeli (ton), mutu beras (SNI), nomor gudang penerimaan, tanggal
     pembelian dari RMU/distributor. Nomor SO (Sales Order), volume
     dijual (ton), penerima (distributor/retailer), tanggal pengiriman
     dari gudang.
@@ -140,4 +142,6 @@ Petani). Sistem login tidak bisa menggunakan email yang sama.
     (karung), tanggal terima, nomor batch beras, harga eceran, tanggal
     penjualan. Selain itu, tambahkan juga checklis berupa Keterangan
     Berat bersih, logo halal, keterangan nama dan alamat produsen,
-    tanggal kadaluarsa pada pengisian data Retailer
+    tanggal kadaluarsa pada pengisian data Retailer.
+
+PERUBAHAN SISTEM: Sistem sebelumnya sudah baik. Urutan yang seharusnya: Petani ke Pengepul ke RMU Ke Distributor Ke Bulog Ke Retailer. Namun,  sekarang ada perubahan sistem, Batch ID yang dihasilkan oleh petani dapat digunakan pada entitas pengepul dan RMU. selain itu, Batch ID yang dihasilkan oleh RMU dapat digunakan oleh Distributor, Bulog, dan Retailer. Batch ID dari ditributor dapat digunakan oleh Retailer. Jika Batch ID digunakan secara "melompat" contoh dari batch ID petani digunakan oleh RMU maka Batch ID dari Petani tidak bisa digunakan oleh Pengepul, sehingga pengepul tidak bisa memasukkan data. Hal tersebut juga berlaku untuk selanjutnya, contoh Batch ID dari RMU digunakan oleh Bulog, maka batch ID dari RMU tidak bisa digunakan oleh Distributor, Jika Batch ID dari RMU digunakan oleh Retailer maka Batch ID dari RMu tidak bisa digunakan oleh Distributor dan Bulog. Jika Batch ID dari distributor digunakan retailer maka Batch ID dari distributor tidak bisa digunakan oleh Bulog. Sebagai tambahan, sekarang Konsumen hanya dapat membeli beras dari Distributor, Bulog, dan Retailer. Konsumen tetap bisa melakukan traceability dari entitas petani hingga entitas yang mereka lakukan pembelian beras. Jika Konsumen membeli beras dari Distributor dan Bulog, maka konsumen harus melakukan input batch ID secara manual. Jika konsumen membeli batch ID dari retailer maka konsumen dapat melakukan scan Batch ID untuk memperoleh data traceability.

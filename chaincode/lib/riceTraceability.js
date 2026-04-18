@@ -5,6 +5,24 @@ const stringify = require('json-stringify-deterministic');
 const sortKeysRecursive = require('sort-keys-recursive');
 const { validateSNI } = require('./utils/sniValidator');
 
+const ENTITY_ORDER = {
+  petani: 0,
+  pengepul: 1,
+  rmu: 2,
+  distributor: 3,
+  bulog: 4,
+  retailer: 5,
+};
+
+const ALLOWED_PREV = {
+  petani: null,
+  pengepul: ['petani'],
+  rmu: ['petani', 'pengepul'],
+  distributor: ['rmu'],
+  bulog: ['rmu', 'distributor'],
+  retailer: ['rmu', 'distributor', 'bulog'],
+};
+
 class RiceTraceabilityContract extends Contract {
   constructor() {
     super('RiceTraceabilityContract');
@@ -12,6 +30,61 @@ class RiceTraceabilityContract extends Contract {
 
   async initLedger(ctx) {
     console.info('Rice Traceability chaincode initialized');
+  }
+
+  async _getConsumersOfPrevBatch(ctx, prevBatchId) {
+    const queryString = JSON.stringify({
+      selector: {
+        'data.prev_batch_id': prevBatchId,
+      },
+    });
+    const iterator = await ctx.stub.getQueryResult(queryString);
+    const consumers = [];
+    let result = await iterator.next();
+    while (!result.done) {
+      consumers.push(JSON.parse(result.value.value.toString()));
+      result = await iterator.next();
+    }
+    return consumers;
+  }
+
+  async _checkJumpBlock(ctx, prevBatchId, currentEntityType) {
+    const consumers = await this._getConsumersOfPrevBatch(ctx, prevBatchId);
+    const currentOrder = ENTITY_ORDER[currentEntityType];
+
+    for (const consumer of consumers) {
+      const consumerOrder = ENTITY_ORDER[consumer.entityType];
+      if (consumerOrder > currentOrder) {
+        return consumer.entityType;
+      }
+    }
+
+    return null;
+  }
+
+  async _validatePrevBatch(ctx, prevBatchId, currentEntityType) {
+    const prevBatchBytes = await ctx.stub.getState(prevBatchId);
+    if (prevBatchBytes.length === 0) {
+      throw new Error(`Previous batch ${prevBatchId} does not exist`);
+    }
+
+    const prevBatchObj = JSON.parse(prevBatchBytes.toString());
+    const allowedPrevTypes = ALLOWED_PREV[currentEntityType];
+
+    if (!allowedPrevTypes || !allowedPrevTypes.includes(prevBatchObj.entityType)) {
+      const allowed = allowedPrevTypes ? allowedPrevTypes.join(' atau ') : 'tidak ada';
+      throw new Error(
+        `Batch ${currentEntityType} harus terhubung dengan batch ${allowed}. Ditemukan: ${prevBatchObj.entityType}`
+      );
+    }
+
+    const blockedBy = await this._checkJumpBlock(ctx, prevBatchId, currentEntityType);
+    if (blockedBy) {
+      throw new Error(
+        `Batch ID ${prevBatchId} sudah digunakan oleh entitas ${blockedBy} yang lebih tinggi. ` +
+        `Entitas ${currentEntityType} tidak dapat menggunakan batch ini karena sudah dilewati (melompat).`
+      );
+    }
   }
 
   async createFarmerBatch(ctx, batchId, dataJson) {
@@ -47,15 +120,7 @@ class RiceTraceabilityContract extends Contract {
     }
 
     const data = JSON.parse(dataJson);
-    const prevBatch = await ctx.stub.getState(data.prev_batch_id);
-    if (prevBatch.length === 0) {
-      throw new Error(`Previous batch ${data.prev_batch_id} does not exist`);
-    }
-
-    const prevBatchObj = JSON.parse(prevBatch.toString());
-    if (prevBatchObj.entityType !== 'petani') {
-      throw new Error('Collector batch must link to a farmer batch');
-    }
+    await this._validatePrevBatch(ctx, data.prev_batch_id, 'pengepul');
 
     const batch = {
       batchId,
@@ -77,15 +142,7 @@ class RiceTraceabilityContract extends Contract {
     }
 
     const data = JSON.parse(dataJson);
-    const prevBatch = await ctx.stub.getState(data.prev_batch_id);
-    if (prevBatch.length === 0) {
-      throw new Error(`Previous batch ${data.prev_batch_id} does not exist`);
-    }
-
-    const prevBatchObj = JSON.parse(prevBatch.toString());
-    if (prevBatchObj.entityType !== 'pengepul') {
-      throw new Error('RMU batch must link to a collector batch');
-    }
+    await this._validatePrevBatch(ctx, data.prev_batch_id, 'rmu');
 
     const sniResult = validateSNI({
       derajat_sosoh: data.derajat_sosoh,
@@ -120,15 +177,7 @@ class RiceTraceabilityContract extends Contract {
     }
 
     const data = JSON.parse(dataJson);
-    const prevBatch = await ctx.stub.getState(data.prev_batch_id);
-    if (prevBatch.length === 0) {
-      throw new Error(`Previous batch ${data.prev_batch_id} does not exist`);
-    }
-
-    const prevBatchObj = JSON.parse(prevBatch.toString());
-    if (prevBatchObj.entityType !== 'rmu') {
-      throw new Error('Distributor batch must link to an RMU batch');
-    }
+    await this._validatePrevBatch(ctx, data.prev_batch_id, 'distributor');
 
     const batch = {
       batchId,
@@ -150,15 +199,7 @@ class RiceTraceabilityContract extends Contract {
     }
 
     const data = JSON.parse(dataJson);
-    const prevBatch = await ctx.stub.getState(data.prev_batch_id);
-    if (prevBatch.length === 0) {
-      throw new Error(`Previous batch ${data.prev_batch_id} does not exist`);
-    }
-
-    const prevBatchObj = JSON.parse(prevBatch.toString());
-    if (prevBatchObj.entityType !== 'distributor') {
-      throw new Error('Bulog batch must link to a distributor batch');
-    }
+    await this._validatePrevBatch(ctx, data.prev_batch_id, 'bulog');
 
     const batch = {
       batchId,
@@ -180,15 +221,7 @@ class RiceTraceabilityContract extends Contract {
     }
 
     const data = JSON.parse(dataJson);
-    const prevBatch = await ctx.stub.getState(data.prev_batch_id);
-    if (prevBatch.length === 0) {
-      throw new Error(`Previous batch ${data.prev_batch_id} does not exist`);
-    }
-
-    const prevBatchObj = JSON.parse(prevBatch.toString());
-    if (prevBatchObj.entityType !== 'bulog' && prevBatchObj.entityType !== 'distributor') {
-      throw new Error('Retailer batch must link to a Bulog or Distributor batch');
-    }
+    await this._validatePrevBatch(ctx, data.prev_batch_id, 'retailer');
 
     const batch = {
       batchId,

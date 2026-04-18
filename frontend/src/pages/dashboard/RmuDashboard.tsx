@@ -20,7 +20,7 @@ const RmuDashboard = () => {
     setLoading(true);
     try {
       const res = await api.post("/rmu/batch", {
-        prev_batch_id: prevBatchId, volume_gkg_masuk_kg: recv.gkg, nomor_batch_pengepul: recv.batch,
+        prev_batch_id: prevBatchId, volume_gkg_masuk_kg: recv.gkg, ...(recv.batch ? { nomor_batch_pengepul: recv.batch } : {}),
         kadar_air_masuk: recv.moisture, pemeriksaan_visual: recv.visual, tanggal_penerimaan: recv.date,
         supplier_id: recv.supplier, jenis_kemasan: pack.type, berat_netto: pack.weight,
         tanggal_pengemasan: pack.date, nomor_batch_beras: pack.batchNo, sertifikat_mutu_sni: pack.sniCert,
@@ -35,11 +35,11 @@ const RmuDashboard = () => {
   return (
     <DashboardLayout title="Dasbor RMU" entityLabel="Penggilingan Padi">
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Card><CardHeader><CardTitle>Batch ID dari Pengepul</CardTitle></CardHeader><CardContent><div className="space-y-2"><Label>ID Batch Pengepul</Label><Input value={prevBatchId} onChange={e => setPrevBatchId(e.target.value)} required /></div></CardContent></Card>
+        <Card><CardHeader><CardTitle>Batch ID dari Petani/Pengepul</CardTitle></CardHeader><CardContent><div className="space-y-2"><Label>ID Batch (Petani atau Pengepul)</Label><Input placeholder="cth. FARMER_... atau COLLECTOR_..." value={prevBatchId} onChange={e => setPrevBatchId(e.target.value)} required /></div></CardContent></Card>
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><Factory className="w-5 h-5 text-primary" />Data Penerimaan</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2"><Label>Volume GKG Masuk (kg)</Label><Input type="number" value={recv.gkg} onChange={e => setRecv({ ...recv, gkg: e.target.value })} required /></div>
-            <div className="space-y-2"><Label>Nomor Batch Pengepul</Label><Input value={recv.batch} onChange={e => setRecv({ ...recv, batch: e.target.value })} required /></div>
+            <div className="space-y-2"><Label>Nomor Batch Pengepul</Label><Input placeholder="Opsional jika dari Petani langsung" value={recv.batch} onChange={e => setRecv({ ...recv, batch: e.target.value })} /></div>
             <div className="space-y-2"><Label>Kadar Air Masuk (%)</Label><Input type="number" step="0.1" value={recv.moisture} onChange={e => setRecv({ ...recv, moisture: e.target.value })} required /></div>
             <div className="space-y-2"><Label>Inspeksi Visual</Label><Input value={recv.visual} onChange={e => setRecv({ ...recv, visual: e.target.value })} required /></div>
             <div className="space-y-2"><Label>Tanggal Penerimaan</Label><Input type="date" value={recv.date} onChange={e => setRecv({ ...recv, date: e.target.value })} required /></div>

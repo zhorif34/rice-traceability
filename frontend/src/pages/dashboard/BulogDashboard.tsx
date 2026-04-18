@@ -32,7 +32,7 @@ const BulogDashboard = () => {
   return (
     <DashboardLayout title="Dasbor Bulog" entityLabel="Bulog">
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Card><CardHeader><CardTitle>Batch ID dari Distributor</CardTitle></CardHeader><CardContent><div className="space-y-2"><Label>ID Batch Distributor</Label><Input value={prevBatchId} onChange={e => setPrevBatchId(e.target.value)} required /></div></CardContent></Card>
+        <Card><CardHeader><CardTitle>Batch ID dari RMU/Distributor</CardTitle></CardHeader><CardContent><div className="space-y-2"><Label>ID Batch (RMU atau Distributor)</Label><Input placeholder="cth. RMU_... atau DISTRIBUTOR_..." value={prevBatchId} onChange={e => setPrevBatchId(e.target.value)} required /></div></CardContent></Card>
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><ShoppingCart className="w-5 h-5 text-primary" />Data Pembelian</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2"><Label>Nomor PO</Label><Input value={purchase.po} onChange={e => setPurchase({ ...purchase, po: e.target.value })} required /></div>

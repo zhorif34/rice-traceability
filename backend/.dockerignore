@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+.env
+.env.example
+*.log
+backend.err.log
+server.log
+tmux.log
+connection-profile
