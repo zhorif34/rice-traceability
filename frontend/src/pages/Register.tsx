@@ -15,6 +15,7 @@ const entities = [
   { value: "distributor", label: "Distributor" },
   { value: "bulog", label: "Bulog" },
   { value: "retailer", label: "Pengecer" },
+  { value: "admin", label: "Admin" },
 ];
 
 const Register = () => {
@@ -58,10 +59,10 @@ const Register = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2"><Label htmlFor="name">Nama Lengkap / Perusahaan</Label><Input id="name" placeholder="Nama atau perusahaan Anda" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></div>
             <div className="space-y-2"><Label htmlFor="reg-email">Email</Label><Input id="reg-email" type="email" placeholder="email@anda.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required /></div>
-            <div className="space-y-2"><Label>Jenis Entitas</Label><Select value={form.entity} onValueChange={(v) => setForm({ ...form, entity: v })}><SelectTrigger><SelectValue placeholder="Pilih peran Anda" /></SelectTrigger><SelectContent>{entities.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>Jenis Entitas</Label><Select value={form.entity} onValueChange={(v) => setForm({ ...form, entity: v })}><SelectTrigger className="bg-white"><SelectValue placeholder="Pilih peran Anda" /></SelectTrigger><SelectContent className="bg-white text-foreground border border-slate-200">{entities.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label htmlFor="reg-pass">Kata Sandi</Label><div className="relative"><Input id="reg-pass" type={showPass ? "text" : "password"} placeholder="••••••••" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required /><button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">{showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button></div></div>
             <div className="space-y-2"><Label htmlFor="confirm">Konfirmasi Kata Sandi</Label><Input id="confirm" type="password" placeholder="••••••••" value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} required /></div>
-            <Button type="submit" className="w-full" size="lg" disabled={loading}>{loading ? "Memproses..." : "Buat Akun"}</Button>
+            <Button type="submit" className="w-full bg-yellow-400 text-black hover:bg-yellow-500" size="lg" disabled={loading}>{loading ? "Memproses..." : "Buat Akun"}</Button>
           </form>
           <p className="text-center text-sm text-muted-foreground">Sudah punya akun? <Link to="/login" className="text-primary font-medium hover:underline">Masuk</Link></p>
         </div>
