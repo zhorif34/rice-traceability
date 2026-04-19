@@ -11,7 +11,7 @@ const router = Router();
 router.post('/batch', authMiddleware, roleGuard('bulog'), async (req, res) => {
   try {
     const required = [
-      'prev_batch_id', 'nomor_po', 'volume_dibeli_ton', 'harga_satuan_rp_per_kg',
+      'prev_batch_id', 'nomor_po', 'volume_dibeli_ton',
       'mutu_beras_sni', 'nomor_gudang_penerimaan', 'tanggal_pembelian',
       'nomor_so', 'volume_dijual_ton', 'penerima', 'tanggal_pengiriman_gudang',
     ];

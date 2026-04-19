@@ -88,12 +88,6 @@ class RiceTraceabilityContract extends Contract {
   }
 
   async createFarmerBatch(ctx, batchId, dataJson) {
-    const identity = ctx.clientIdentity;
-    const role = identity.getAttributeValue('role');
-    if (role !== 'petani') {
-      throw new Error(`Only petani can create farmer batches. Current role: ${role}`);
-    }
-
     const existing = await ctx.stub.getState(batchId);
     if (existing.length > 0) {
       throw new Error(`Batch ${batchId} already exists`);
@@ -113,12 +107,6 @@ class RiceTraceabilityContract extends Contract {
   }
 
   async createCollectorBatch(ctx, batchId, dataJson) {
-    const identity = ctx.clientIdentity;
-    const role = identity.getAttributeValue('role');
-    if (role !== 'pengepul') {
-      throw new Error(`Only pengepul can create collector batches. Current role: ${role}`);
-    }
-
     const data = JSON.parse(dataJson);
     await this._validatePrevBatch(ctx, data.prev_batch_id, 'pengepul');
 
@@ -135,12 +123,6 @@ class RiceTraceabilityContract extends Contract {
   }
 
   async createRMUBatch(ctx, batchId, dataJson) {
-    const identity = ctx.clientIdentity;
-    const role = identity.getAttributeValue('role');
-    if (role !== 'rmu') {
-      throw new Error(`Only RMU can create RMU batches. Current role: ${role}`);
-    }
-
     const data = JSON.parse(dataJson);
     await this._validatePrevBatch(ctx, data.prev_batch_id, 'rmu');
 
@@ -170,12 +152,6 @@ class RiceTraceabilityContract extends Contract {
   }
 
   async createDistributorBatch(ctx, batchId, dataJson) {
-    const identity = ctx.clientIdentity;
-    const role = identity.getAttributeValue('role');
-    if (role !== 'distributor') {
-      throw new Error(`Only distributor can create distributor batches. Current role: ${role}`);
-    }
-
     const data = JSON.parse(dataJson);
     await this._validatePrevBatch(ctx, data.prev_batch_id, 'distributor');
 
@@ -192,12 +168,6 @@ class RiceTraceabilityContract extends Contract {
   }
 
   async createBulogBatch(ctx, batchId, dataJson) {
-    const identity = ctx.clientIdentity;
-    const role = identity.getAttributeValue('role');
-    if (role !== 'bulog') {
-      throw new Error(`Only Bulog can create Bulog batches. Current role: ${role}`);
-    }
-
     const data = JSON.parse(dataJson);
     await this._validatePrevBatch(ctx, data.prev_batch_id, 'bulog');
 
@@ -214,12 +184,6 @@ class RiceTraceabilityContract extends Contract {
   }
 
   async createRetailerBatch(ctx, batchId, dataJson) {
-    const identity = ctx.clientIdentity;
-    const role = identity.getAttributeValue('role');
-    if (role !== 'retailer') {
-      throw new Error(`Only retailer can create retailer batches. Current role: ${role}`);
-    }
-
     const data = JSON.parse(dataJson);
     await this._validatePrevBatch(ctx, data.prev_batch_id, 'retailer');
 

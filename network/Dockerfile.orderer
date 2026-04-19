@@ -1,0 +1,4 @@
+FROM hyperledger/fabric-orderer:2.5
+
+COPY organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp /var/hyperledger/orderer/msp
+COPY organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls /var/hyperledger/orderer/tls

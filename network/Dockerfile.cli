@@ -1,0 +1,4 @@
+FROM hyperledger/fabric-tools:2.5
+
+COPY organizations /opt/fabric/
+COPY channel-artifacts /opt/fabric/channel-artifacts/

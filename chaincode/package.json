@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "fabric-chaincode-node start",
+    "server": "fabric-chaincode-node server",
     "test": "mocha test/**/*.test.js --timeout 10000",
     "lint": "eslint ."
   },

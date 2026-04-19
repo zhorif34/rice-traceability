@@ -16,11 +16,14 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    networks:
+      - app-network
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     ports:
       - "5000:5000"
     environment:
@@ -33,10 +36,23 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev_secret_change_in_production}
       FABRIC_CHANNEL: mychannel
       FABRIC_CHAINCODE_NAME: riceTraceability
+      FABRIC_MOCK_MODE: ${FABRIC_MOCK_MODE:-false}
+      FABRIC_PEER_ENDPOINT: peer0.org1.example.com:7051
+      FABRIC_PEER_HOST_ALIAS: peer0.org1.example.com
+      FABRIC_PEER_TLS_CERT: /app/fabric/crypto/peer-tls-ca.crt
+      FABRIC_ORDERER_ENDPOINT: orderer.example.com:7050
+      FABRIC_ORDERER_HOST_ALIAS: orderer.example.com
+      FABRIC_ORDERER_TLS_CERT: /app/fabric/crypto/orderer-tls-ca.crt
+      FABRIC_CERT: /app/fabric/crypto/admin-cert.pem
+      FABRIC_KEY: /app/fabric/crypto/admin-key.pem
+      FABRIC_MSP_ID: Org1MSP
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
+    networks:
+      - app-network
+      - fabric-network
 
   frontend:
     build:
@@ -49,6 +65,15 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+  fabric-network:
+    external: true
+    name: network_rice-network
 
 volumes:
   pgdata:
