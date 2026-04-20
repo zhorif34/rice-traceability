@@ -61,12 +61,12 @@ const Traceability = () => {
           </div>
 
           <div className="max-w-lg mx-auto mb-16 animate-fade-up">
-            <div className="flex gap-2 mb-4 justify-center">
-              <Button variant={scanMode ? "outline" : "default"} size="sm" onClick={() => setScanMode(false)} className={!scanMode ? "bg-green-800 text-white hover:bg-green-900" : ""}>
-                <Keyboard className="w-4 h-4 mr-2" />Input Manual
+            <div className="flex gap-4 mb-6 justify-center">
+              <Button size="lg" onClick={() => setScanMode(false)} className={`h-14 px-8 text-base font-semibold rounded-xl shadow-md transition-all ${!scanMode ? "bg-green-700 text-white hover:bg-green-800 ring-2 ring-green-700 ring-offset-2" : "bg-white text-green-700 border-2 border-green-700 hover:bg-green-50"}`}>
+                <Keyboard className="w-5 h-5 mr-2" />Input Manual
               </Button>
-              <Button variant={scanMode ? "default" : "outline"} size="sm" onClick={() => setScanMode(true)} className={scanMode ? "bg-green-800 text-white hover:bg-green-900" : ""}>
-                <Camera className="w-4 h-4 mr-2" />Pindai QR
+              <Button size="lg" onClick={() => setScanMode(true)} className={`h-14 px-8 text-base font-semibold rounded-xl shadow-md transition-all ${scanMode ? "bg-green-700 text-white hover:bg-green-800 ring-2 ring-green-700 ring-offset-2" : "bg-white text-green-700 border-2 border-green-700 hover:bg-green-50"}`}>
+                <Camera className="w-5 h-5 mr-2" />Pindai QR
               </Button>
             </div>
 
@@ -78,7 +78,7 @@ const Traceability = () => {
             ) : (
               <form onSubmit={handleSearch} className="flex gap-3">
                 <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" /><Input placeholder="Masukkan ID Batch" className="pl-10 h-12" value={batchId} onChange={(e) => setBatchId(e.target.value)} /></div>
-                <Button type="submit" size="lg" className="h-12 bg-green-800 text-white hover:bg-green-900" disabled={loading}><QrCode className="w-5 h-5 mr-2" />{loading ? "..." : "Lacak"}</Button>
+                <Button type="submit" size="lg" className="h-12 bg-green-800 text-white hover:bg-green-900" disabled={loading}>{loading ? "..." : "Lacak"}</Button>
               </form>
             )}
           </div>
