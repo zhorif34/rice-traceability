@@ -23,6 +23,7 @@ const DistributorDashboard = () => {
         tanggal_pengiriman: form.dispatchDate,
       });
       toast.success(`Batch ID: ${res.data.batchId}`, { description: "Data distributor dicatat." });
+      if (res.data.qrCode) { const w = window.open('', '_blank'); if (w) { w.document.write(`<img src="${res.data.qrCode}" />`); w.document.title = "QR Code"; } }
       setForm({ prevBatchId: "", poNumber: "", riceVolume: "", destination: "", dispatchDate: "" });
     } catch (err: any) { toast.error(err.response?.data?.error || "Gagal."); } finally { setLoading(false); }
   };
@@ -39,7 +40,7 @@ const DistributorDashboard = () => {
             <div className="space-y-2"><Label>Tanggal Pengiriman</Label><Input type="date" value={form.dispatchDate} onChange={e => setForm({ ...form, dispatchDate: e.target.value })} required /></div>
           </CardContent>
         </Card>
-        <Button type="submit" size="lg" disabled={loading}>{loading ? "Memproses..." : "Kirim Data"}</Button>
+        <Button type="submit" size="lg" disabled={loading}>{loading ? "Memproses..." : "Kirim & Buat QR"}</Button>
       </form>
     </DashboardLayout>
   );

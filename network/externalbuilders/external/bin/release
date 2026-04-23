@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+METADATA_DIR="$1"
+OUTPUT_DIR="$2"
+if [ -f "$METADATA_DIR/connection.json" ]; then
+    cp "$METADATA_DIR/connection.json" "$OUTPUT_DIR/connection.json"
+fi
+exit 0

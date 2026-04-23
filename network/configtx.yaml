@@ -111,18 +111,6 @@ Channel: &ChannelDefaults
     <<: *ChannelCapabilities
 
 Profiles:
-  RiceTraceabilityOrdererGenesis:
-    <<: *ChannelDefaults
-    Orderer:
-      <<: *OrdererDefaults
-      Organizations:
-        - *OrdererOrg
-      Capabilities: *OrdererCapabilities
-    Consortiums:
-      RiceTraceabilityConsortium:
-        Organizations:
-          - *Org1
-
   RiceTraceabilityChannel:
     <<: *ChannelDefaults
     Orderer:
@@ -135,4 +123,3 @@ Profiles:
       Organizations:
         - *Org1
       Capabilities: *ApplicationCapabilities
-    Consortium: RiceTraceabilityConsortium

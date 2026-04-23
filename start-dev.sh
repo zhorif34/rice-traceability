@@ -1,12 +1,76 @@
 #!/bin/bash
+set -e
+
 cd /home/zhorif34/rice-traceability
 
-echo "Starting rice-traceability with Docker..."
-docker-compose up --build
+echo "============================================"
+echo "  Rice Traceability - Full Startup"
+echo "============================================"
+
+echo ""
+echo ">>> Step 1/7: Generating crypto materials & channel artifacts..."
+bash network/generate.sh
+
+echo ""
+echo ">>> Step 2/7: Starting Fabric network (orderer, peer, couchdb, cli)..."
+docker compose -f network/docker-compose-net.yaml up -d --build orderer.example.com couchdb0 peer0.org1.example.com cli
+
+echo "Waiting for peer to start..."
+sleep 5
+
+echo ""
+echo ">>> Step 3/7: Initializing channel & chaincode lifecycle..."
+INIT_OUTPUT=$(docker exec cli bash /tmp/init-channel.sh 2>&1)
+echo "${INIT_OUTPUT}"
+
+echo ""
+echo ">>> Step 4/7: Getting chaincode package ID..."
+PACKAGE_ID=$(echo "${INIT_OUTPUT}" | grep 'Chaincode code package identifier:' | awk '{print $NF}' | tail -1)
+
+if [ -z "$PACKAGE_ID" ]; then
+    PACKAGE_ID=$(echo "${INIT_OUTPUT}" | grep -o 'riceTraceability:[a-f0-9]\{64\}' | tail -1)
+fi
+
+if [ -z "$PACKAGE_ID" ]; then
+    echo "ERROR: Could not determine package ID. Falling back to riceTraceability:1.0"
+    export CHAINCODE_PKG_ID="riceTraceability:1.0"
+else
+    export CHAINCODE_PKG_ID="$PACKAGE_ID"
+fi
+
+echo "Using chaincode package ID: $CHAINCODE_PKG_ID"
+
+echo ""
+echo ">>> Step 5/7: Starting chaincode container..."
+docker rm -f riceTraceability_chaincode 2>/dev/null || true
+CHAINCODE_PKG_ID="$CHAINCODE_PKG_ID" docker compose -f network/docker-compose-net.yaml up -d --build chaincode
+
+echo "Waiting for chaincode to connect to peer..."
+sleep 5
+
+echo ""
+echo ">>> Step 6/7: Starting Hyperledger Explorer..."
+docker compose -f network/docker-compose-net.yaml up -d explorerdb.mynetwork.com
+echo "Waiting for Explorer DB to be ready..."
+sleep 10
+docker compose -f network/docker-compose-net.yaml up -d explorer.mynetwork.com
+
+echo ""
+echo ">>> Step 7/7: Starting application (backend, frontend, postgres)..."
+docker compose up -d --build
 
 echo ""
 echo "============================================"
-echo "  Backend:  http://localhost:5000"
-echo "  Frontend: http://localhost:3000"
-echo "  Database: localhost:5432"
+echo "  All services are running!"
+echo "============================================"
+echo "  Backend:      http://localhost:5000"
+echo "  Frontend:     http://localhost:3000"
+echo "  Frontend HTTPS: https://localhost:3443 (for QR scanner from other devices)"
+echo "  Explorer:     http://localhost:8080"
+echo "    Login:      exploreradmin / exploreradminpw"
+echo "  Database:     localhost:5432"
+echo "  Peer:         localhost:7051"
+echo "  Orderer:      localhost:7050"
+echo "  CouchDB:      http://localhost:5984/_utils"
+echo "    Login:      admin / adminpw"
 echo "============================================"

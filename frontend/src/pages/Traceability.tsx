@@ -56,7 +56,7 @@ const Traceability = () => {
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">Masukkan ID Batch atau pindai kode QR untuk melihat perjalanan rantai pasok beras Anda.</p>
             <p className="text-muted-foreground text-sm max-w-lg mx-auto mt-3">
               Konsumen dapat menelusuri beras yang dibeli dari <span className="font-semibold text-primary">Distributor</span>, <span className="font-semibold text-primary">Bulog</span>, atau <span className="font-semibold text-primary">Pengecer</span>.
-              Gunakan <span className="font-medium">Input Manual</span> untuk batch dari Distributor/Bulog, atau <span className="font-medium">Pindai QR</span> untuk beras dari Pengecer.
+              Pindai kode QR dari kemasan atau gunakan <span className="font-medium">Input Manual</span> untuk memasukkan ID Batch.
             </p>
           </div>
 

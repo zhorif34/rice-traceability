@@ -1,0 +1,59 @@
+{
+  "name": "rice-traceability-network",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "client": {
+    "tlsEnable": true,
+    "adminCredential": {
+      "id": "exploreradmin",
+      "password": "exploreradminpw"
+    },
+    "enableAuthentication": true,
+    "organization": "Org1MSP",
+    "connection": {
+      "timeout": {
+        "peer": { "endorser": "300" },
+        "orderer": "300"
+      }
+    }
+  },
+  "channels": {
+    "mychannel": {
+      "peers": ["peer0.org1.example.com"],
+      "orderers": ["orderer.example.com"]
+    }
+  },
+  "organizations": {
+    "Org1MSP": {
+      "mspid": "Org1MSP",
+      "admin": {
+        "id": "admin",
+        "certificate": "/opt/explorer/app/platform/fabric/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem",
+        "private_key": "/opt/explorer/app/platform/fabric/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/priv_sk"
+      },
+      "signedCert": {
+        "path": "/opt/explorer/app/platform/fabric/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem"
+      },
+      "adminPrivateKey": {
+        "path": "/opt/explorer/app/platform/fabric/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/priv_sk"
+      },
+      "peers": ["peer0.org1.example.com"]
+    }
+  },
+  "peers": {
+    "peer0.org1.example.com": {
+      "tlsCACerts": {
+        "path": "/opt/explorer/app/platform/fabric/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"
+      },
+      "url": "grpcs://peer0.org1.example.com:7051"
+    }
+  },
+  "orderers": {
+    "orderer.example.com": {
+      "tlsCACerts": {
+        "path": "/opt/explorer/app/platform/fabric/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/tls/ca.crt"
+      },
+      "url": "grpcs://orderer.example.com:7050"
+    }
+  }
+}

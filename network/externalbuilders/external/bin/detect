@@ -1,0 +1,29 @@
+#!/bin/bash
+echo "detect args: $@ pwd=$(pwd)" >&2
+for arg in "$@"; do
+    echo "  arg: $arg" >&2
+    if [ -d "$arg" ]; then
+        echo "    contents:" >&2
+        ls -la "$arg/" >&2
+    fi
+    if [ -f "$arg/metadata.json" ]; then
+        echo "    metadata.json:" >&2
+        cat "$arg/metadata.json" >&2
+    fi
+done
+
+METADATA_DIR="$1"
+if [ -n "$2" ]; then
+    METADATA_DIR="$2"
+fi
+
+if [ -f "$METADATA_DIR/metadata.json" ]; then
+    TYPE=$(cat "$METADATA_DIR/metadata.json" | sed -n 's/.*"type"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+    echo "detected type=$TYPE" >&2
+    if [ "$TYPE" = "external" ]; then
+        echo "MATCH" >&2
+        exit 0
+    fi
+fi
+echo "NO MATCH" >&2
+exit 1

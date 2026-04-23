@@ -1,0 +1,19 @@
+#!/bin/bash
+echo "build args: $@" >&2
+METADATA_DIR="$1"
+SRC_DIR="$2"
+OUTPUT_DIR="$3"
+echo "SRC contents:" >&2
+ls -laR "$SRC_DIR/" >&2 || true
+echo "METADATA contents:" >&2
+ls -laR "$METADATA_DIR/" >&2 || true
+if [ -f "$SRC_DIR/connection.json" ]; then
+    cp "$SRC_DIR/connection.json" "$OUTPUT_DIR/connection.json"
+    echo "Copied connection.json from SRC" >&2
+elif [ -f "$METADATA_DIR/connection.json" ]; then
+    cp "$METADATA_DIR/connection.json" "$OUTPUT_DIR/connection.json"
+    echo "Copied connection.json from METADATA" >&2
+else
+    echo "NO connection.json found anywhere" >&2
+fi
+exit 0

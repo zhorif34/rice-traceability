@@ -2,3 +2,5 @@ FROM hyperledger/fabric-tools:2.5
 
 COPY organizations /opt/fabric/
 COPY channel-artifacts /opt/fabric/channel-artifacts/
+COPY init-channel.sh /tmp/init-channel.sh
+RUN chmod +x /tmp/init-channel.sh

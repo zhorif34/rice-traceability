@@ -1,0 +1,4 @@
+#!/bin/sh
+echo '{"address":"riceTraceability_chaincode:9999","dial_timeout":"10s","tls_required":false}' >&1
+echo "run: output JSON to stdout, now sleeping" >&2
+exec sleep infinity

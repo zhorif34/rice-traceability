@@ -4,6 +4,7 @@ const { Router } = require('express');
 const authMiddleware = require('../middleware/auth');
 const roleGuard = require('../middleware/roleGuard');
 const { submitTransaction } = require('../services/fabricService');
+const { generateQRCode } = require('../services/qrService');
 const { validateRequiredFields } = require('../utils/validators');
 
 const router = Router();
@@ -19,7 +20,8 @@ router.post('/batch', authMiddleware, roleGuard('bulog'), async (req, res) => {
 
     const batchId = `BULOG_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
     const result = await submitTransaction('createBulogBatch', batchId, JSON.stringify(req.body));
-    res.status(201).json({ batchId, ...result });
+    const qrCode = await generateQRCode(batchId);
+    res.status(201).json({ batchId, qrCode, ...result });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

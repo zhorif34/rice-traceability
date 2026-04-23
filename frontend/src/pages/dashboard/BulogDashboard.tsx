@@ -26,6 +26,7 @@ const BulogDashboard = () => {
         tanggal_pengiriman_gudang: sales.date,
       });
       toast.success(`Batch ID: ${res.data.batchId}`, { description: "Data Bulog dicatat." });
+      if (res.data.qrCode) { const w = window.open('', '_blank'); if (w) { w.document.write(`<img src="${res.data.qrCode}" />`); w.document.title = "QR Code"; } }
     } catch (err: any) { toast.error(err.response?.data?.error || "Gagal."); } finally { setLoading(false); }
   };
 
@@ -51,7 +52,7 @@ const BulogDashboard = () => {
             <div className="space-y-2"><Label>Tanggal Pengiriman</Label><Input type="date" value={sales.date} onChange={e => setSales({ ...sales, date: e.target.value })} required /></div>
           </CardContent>
         </Card>
-        <Button type="submit" size="lg" disabled={loading}>{loading ? "Memproses..." : "Kirim Data"}</Button>
+        <Button type="submit" size="lg" disabled={loading}>{loading ? "Memproses..." : "Kirim & Buat QR"}</Button>
       </form>
     </DashboardLayout>
   );
