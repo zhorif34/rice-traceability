@@ -15,7 +15,7 @@ const BulogDashboard = () => {
   const [purchase, setPurchase] = useState({ po: "", volume: "", price: "", quality: "", warehouse: "", date: "" });
   const [sales, setSales] = useState({ so: "", volume: "", recipient: "", date: "" });
   const [loading, setLoading] = useState(false);
-  const { batches, addBatch } = useBatchHistory();
+  const { batches, refresh } = useBatchHistory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,12 +29,7 @@ const BulogDashboard = () => {
         tanggal_pengiriman_gudang: sales.date,
       });
       const batchId = res.data.batchId;
-      addBatch({
-        batchId,
-        entity: "bulog",
-        summary: `PO ${purchase.po || "-"} • ${purchase.volume || "0"} ton • Gudang ${purchase.warehouse || "-"}`,
-        details: { prevBatchId, ...purchase, ...sales },
-      });
+      await refresh();
       toast.success(`Batch ID: ${batchId}`, { description: "Data Bulog dicatat." });
       if (res.data.qrCode) { const w = window.open('', '_blank'); if (w) { w.document.write(`<img src="${res.data.qrCode}" />`); w.document.title = "QR Code"; } }
     } catch (err: any) { toast.error(err.response?.data?.error || "Gagal."); } finally { setLoading(false); }

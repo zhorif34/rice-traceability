@@ -14,9 +14,10 @@ const RmuDashboard = () => {
   const [prevBatchId, setPrevBatchId] = useState("");
   const [recv, setRecv] = useState({ gkg: "", batch: "", moisture: "", visual: "", date: "", supplier: "" });
   const [pack, setPack] = useState({ type: "", weight: "", date: "", batchNo: "", sniCert: "" });
+  const [beratBerasDigiling, setBeratBerasDigiling] = useState("");
   const [sni, setSni] = useState({ sosoh: "", moisture: "", head: "", broken: "", menir: "" });
   const [loading, setLoading] = useState(false);
-  const { batches, addBatch } = useBatchHistory();
+  const { batches, refresh } = useBatchHistory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,17 +28,13 @@ const RmuDashboard = () => {
         kadar_air_masuk: recv.moisture, pemeriksaan_visual: recv.visual, tanggal_penerimaan: recv.date,
         supplier_id: recv.supplier, jenis_kemasan: pack.type, berat_netto: pack.weight,
         tanggal_pengemasan: pack.date, nomor_batch_beras: pack.batchNo, sertifikat_mutu_sni: pack.sniCert,
+        berat_beras_digiling: beratBerasDigiling,
         kadar_air: sni.moisture, derajat_sosoh: sni.sosoh || undefined,
         butir_kepala: sni.head || undefined, butir_patah: sni.broken || undefined,
         butir_menir: sni.menir || undefined,
       });
       const batchId = res.data.batchId;
-      addBatch({
-        batchId,
-        entity: "rmu",
-        summary: `Sosoh ${sni.sosoh || "-"}% • Air ${sni.moisture || "-"}% • ${pack.weight || "0"} kg`,
-        details: { prevBatchId, ...recv, ...pack, ...sni, statusSNI: "Lolos" },
-      });
+      await refresh();
       toast.success(`Batch ID: ${batchId}`, { description: "SNI tervalidasi!" });
     } catch (err: any) { toast.error(err.response?.data?.error || "Gagal."); } finally { setLoading(false); }
   };
@@ -67,6 +64,9 @@ const RmuDashboard = () => {
             <div className="space-y-2"><Label>Nomor Batch Beras</Label><Input value={pack.batchNo} onChange={e => setPack({ ...pack, batchNo: e.target.value })} required /></div>
             <div className="space-y-2"><Label>Sertifikat Mutu SNI</Label><Input value={pack.sniCert} onChange={e => setPack({ ...pack, sniCert: e.target.value })} required /></div>
           </CardContent>
+        </Card>
+        <Card><CardHeader><CardTitle className="flex items-center gap-2"><Factory className="w-5 h-5 text-primary" />Berat Beras Digiling</CardTitle><CardDescription>Berat beras hasil penggilingan. Tidak boleh melebihi Volume GKG Masuk.</CardDescription></CardHeader>
+          <CardContent><div className="space-y-2"><Label>Berat Beras Digiling (kg)</Label><Input type="number" step="0.1" placeholder="cth. 450.5" value={beratBerasDigiling} onChange={e => setBeratBerasDigiling(e.target.value)} required /></div></CardContent>
         </Card>
         <Card className="border-primary/30"><CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-primary" />Standar Kualitas SNI</CardTitle>
           <CardDescription>Kadar air wajib. Parameter lain opsional tetapi harus memenuhi SNI jika diisi.</CardDescription></CardHeader>

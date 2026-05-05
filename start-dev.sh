@@ -60,36 +60,31 @@ echo ">>> Step 7/9: Starting application (backend, frontend, postgres, ngrok)...
 docker compose up -d --build
 
 echo ""
-echo ">>> Step 8/9: Waiting for ngrok tunnels to come online..."
+echo ">>> Step 8/9: Waiting for ngrok tunnel to come online..."
 NGROK_API="http://localhost:4040/api"
 MAX_RETRIES=30
 RETRY=0
-NGROK_BACKEND_URL=""
+NGROK_URL=""
 
 while [ $RETRY -lt $MAX_RETRIES ]; do
     sleep 2
-    NGROK_BACKEND_URL=$(curl -s "$NGROK_API/tunnels" 2>/dev/null | grep -o '"public_url":"https://[^"]*"' | head -1 | sed 's/"public_url":"\(.*\)"/\1/' || true)
-    if [ -n "$NGROK_BACKEND_URL" ]; then
+    NGROK_URL=$(curl -s "$NGROK_API/tunnels" 2>/dev/null | grep -o '"public_url":"https://[^"]*"' | head -1 | sed 's/"public_url":"\(.*\)"/\1/' || true)
+    if [ -n "$NGROK_URL" ]; then
         break
     fi
     RETRY=$((RETRY + 1))
     echo "  Waiting for ngrok... ($RETRY/$MAX_RETRIES)"
 done
 
-if [ -z "$NGROK_BACKEND_URL" ]; then
-    echo "  WARNING: Could not get ngrok tunnel URLs. Frontend will use localhost."
-    NGROK_BACKEND_URL="http://localhost:5000"
-    NGROK_FRONTEND_URL="http://localhost:3000"
+if [ -z "$NGROK_URL" ]; then
+    echo "  WARNING: Could not get ngrok tunnel URL. Frontend will use localhost."
 else
-    NGROK_FRONTEND_URL=$(curl -s "$NGROK_API/tunnels" 2>/dev/null | grep -o '"public_url":"https://[^"]*"' | tail -1 | sed 's/"public_url":"\(.*\)"/\1/' || true)
-    
-    echo "  Ngrok backend tunnel:  $NGROK_BACKEND_URL"
-    echo "  Ngrok frontend tunnel: $NGROK_FRONTEND_URL"
-    
-    echo ""
-    echo ">>> Step 9/9: Restarting frontend with ngrok backend URL..."
-    VITE_API_URL="${NGROK_BACKEND_URL}/api" docker compose up -d --force-recreate frontend
+    echo "  Ngrok public URL: $NGROK_URL"
 fi
+
+echo ""
+echo ">>> Step 9/9: Restarting frontend with API proxy..."
+VITE_API_URL="/api" docker compose up -d --force-recreate frontend
 
 echo ""
 echo "============================================"

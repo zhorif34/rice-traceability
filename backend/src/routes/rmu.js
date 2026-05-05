@@ -14,7 +14,7 @@ router.post('/batch', authMiddleware, roleGuard('rmu'), async (req, res) => {
       'prev_batch_id', 'volume_gkg_masuk_kg',
       'kadar_air_masuk', 'tanggal_penerimaan', 'supplier_id',
       'jenis_kemasan', 'berat_netto', 'tanggal_pengemasan', 'nomor_batch_beras',
-      'sertifikat_mutu_sni', 'kadar_air',
+      'sertifikat_mutu_sni', 'kadar_air', 'berat_beras_digiling',
     ];
     validateRequiredFields(req.body, required);
 
