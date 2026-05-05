@@ -76,10 +76,28 @@ services:
       - ./frontend/postcss.config.js:/app/postcss.config.js
       - ./frontend/tsconfig.json:/app/tsconfig.json
     environment:
-      - VITE_API_URL=http://localhost:5000/api
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:5000/api}
       - CHOKIDAR_USEPOLLING=true
     depends_on:
       - backend
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    command:
+      - "start"
+      - "--all"
+      - "--config"
+      - "/etc/ngrok/ngrok.yml"
+    volumes:
+      - ./ngrok/ngrok.yml:/etc/ngrok/ngrok.yml:ro
+    ports:
+      - "4040:4040"
+    depends_on:
+      - backend
+      - frontend
     restart: unless-stopped
     networks:
       - app-network
