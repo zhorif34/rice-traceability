@@ -52,6 +52,7 @@ services:
       - ./backend/src/models:/app/src/models
       - ./backend/src/config:/app/src/config
       - ./backend/src/utils:/app/src/utils
+      - ./backend/src/seeders:/app/src/seeders
       - ./backend/fabric/crypto:/app/fabric/crypto
     depends_on:
       postgres:
@@ -88,7 +89,7 @@ services:
     image: ngrok/ngrok:latest
     command:
       - "start"
-      - "--all"
+      - "app"
       - "--config"
       - "/etc/ngrok/ngrok.yml"
     volumes:

@@ -16,7 +16,7 @@ const FarmerDashboard = () => {
   const [planting, setPlanting] = useState({ sowDate: "", seedVariety: "", seedSource: "", pesticides: "" });
   const [harvest, setHarvest] = useState({ harvestDate: "", paddyVolume: "", yieldPerHa: "" });
   const [loading, setLoading] = useState(false);
-  const { batches, addBatch } = useBatchHistory();
+  const { batches, refresh } = useBatchHistory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,12 +30,7 @@ const FarmerDashboard = () => {
         volume_gkg_kg: harvest.paddyVolume, hasil_panen_per_ha: harvest.yieldPerHa,
       });
       const batchId = res.data.batchId;
-      addBatch({
-        batchId,
-        entity: "petani",
-        summary: `${planting.seedVariety || "Padi"} • ${harvest.paddyVolume || "0"} kg • ${land.gps || "-"}`,
-        details: { ...land, ...planting, ...harvest },
-      });
+      await refresh();
       toast.success(`ID Batch: ${batchId}`, { description: "Data dicatat ke blockchain." });
       setLand({ gps: "", area: "", fertHistory: "" });
       setPlanting({ sowDate: "", seedVariety: "", seedSource: "", pesticides: "" });

@@ -14,7 +14,7 @@ import { useBatchHistory } from "@/hooks/useBatchHistory";
 const DistributorDashboard = () => {
   const [form, setForm] = useState({ prevBatchId: "", poNumber: "", riceVolume: "", destination: "", dispatchDate: "" });
   const [loading, setLoading] = useState(false);
-  const { batches, addBatch } = useBatchHistory();
+  const { batches, refresh } = useBatchHistory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,12 +26,7 @@ const DistributorDashboard = () => {
         tanggal_pengiriman: form.dispatchDate,
       });
       const batchId = res.data.batchId;
-      addBatch({
-        batchId,
-        entity: "distributor",
-        summary: `PO ${form.poNumber || "-"} • ${form.riceVolume || "0"} karung • ${form.destination || "-"}`,
-        details: { ...form },
-      });
+      await refresh();
       toast.success(`Batch ID: ${batchId}`, { description: "Data distributor dicatat." });
       if (res.data.qrCode) { const w = window.open('', '_blank'); if (w) { w.document.write(`<img src="${res.data.qrCode}" />`); w.document.title = "QR Code"; } }
       setForm({ prevBatchId: "", poNumber: "", riceVolume: "", destination: "", dispatchDate: "" });

@@ -14,6 +14,7 @@ class RMUBatch {
     this.tanggal_pengemasan = data.tanggal_pengemasan;
     this.nomor_batch_beras = data.nomor_batch_beras;
     this.sertifikat_mutu_sni = data.sertifikat_mutu_sni;
+    this.berat_beras_digiling = data.berat_beras_digiling;
     this.sni = {
       derajat_sosoh: data.derajat_sosoh,
       kadar_air: data.kadar_air,

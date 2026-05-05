@@ -13,7 +13,7 @@ import { useBatchHistory } from "@/hooks/useBatchHistory";
 const CollectorDashboard = () => {
   const [form, setForm] = useState({ prevBatchId: "", consignmentNo: "", gkgVolume: "", farmerOrigin: "", dispatchDate: "" });
   const [loading, setLoading] = useState(false);
-  const { batches, addBatch } = useBatchHistory();
+  const { batches, refresh } = useBatchHistory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,12 +25,7 @@ const CollectorDashboard = () => {
         tanggal_pengiriman: form.dispatchDate,
       });
       const batchId = res.data.batchId;
-      addBatch({
-        batchId,
-        entity: "pengepul",
-        summary: `Dari ${form.prevBatchId || "-"} • ${form.gkgVolume || "0"} kg`,
-        details: { ...form },
-      });
+      await refresh();
       toast.success(`Batch ID: ${batchId}`, { description: "Data pengepul berhasil dicatat." });
       setForm({ prevBatchId: "", consignmentNo: "", gkgVolume: "", farmerOrigin: "", dispatchDate: "" });
     } catch (err: any) { toast.error(err.response?.data?.error || "Gagal."); } finally { setLoading(false); }

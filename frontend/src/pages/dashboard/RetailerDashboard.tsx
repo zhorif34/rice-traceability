@@ -16,7 +16,7 @@ const RetailerDashboard = () => {
   const [purchase, setPurchase] = useState({ invoice: "", volume: "", dateRecv: "", batchNo: "", price: "", dateSale: "" });
   const [checklist, setChecklist] = useState({ netWeight: false, halal: false, name: false, address: false, expiry: false });
   const [loading, setLoading] = useState(false);
-  const { batches, addBatch } = useBatchHistory();
+  const { batches, refresh } = useBatchHistory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,15 +32,7 @@ const RetailerDashboard = () => {
         tanggal_kadaluarsa: new Date(Date.now() + 365*24*60*60*1000).toISOString().split('T')[0],
       });
       const batchId = res.data.batchId;
-      addBatch({
-        batchId,
-        entity: "retailer",
-        summary: `Faktur ${purchase.invoice || "-"} • ${purchase.volume || "0"} karung • Rp ${purchase.price || "0"}/kg`,
-        details: {
-          prevBatchId, ...purchase,
-          ...Object.fromEntries(Object.entries(checklist).map(([k, v]) => [k, v ? "Ya" : "Tidak"])),
-        },
-      });
+      await refresh();
       toast.success(`Batch ID: ${batchId}`, { description: "QR Code dihasilkan!" });
       if (res.data.qrCode) { const w = window.open('', '_blank'); if (w) { w.document.write(`<img src="${res.data.qrCode}" />`); w.document.title = "QR Code"; } }
     } catch (err: any) { toast.error(err.response?.data?.error || "Gagal."); } finally { setLoading(false); }

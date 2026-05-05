@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import api from "@/services/api";
 
 export type BatchEntry = {
   batchId: string;
@@ -9,66 +10,50 @@ export type BatchEntry = {
   createdAt: string;
 };
 
-const STORAGE_PREFIX = "ambapari_batches_";
-const EVENT_NAME = "ambapari:batches-updated";
-
-const getCurrentUser = (): { email: string } | null => {
-  try {
-    const raw = localStorage.getItem("ambapari_user");
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
-
-const storageKey = (email: string) => `${STORAGE_PREFIX}${email}`;
-
-const readBatches = (email: string): BatchEntry[] => {
-  try {
-    const raw = localStorage.getItem(storageKey(email));
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
+function mapBatch(raw: any): BatchEntry {
+  const data = raw.data || {};
+  return {
+    batchId: raw.batchId,
+    entity: raw.entityType,
+    summary: data.volume_gkg_kg
+      ? `${data.varietas_benih || ""} • ${data.volume_gkg_kg} kg`
+      : data.volume_gkg_diterima_kg
+        ? `${data.asal_petani_lokasi || ""} • ${data.volume_gkg_diterima_kg} kg`
+        : data.volume_gkg_masuk_kg
+          ? `GKG ${data.volume_gkg_masuk_kg} kg • ${data.berat_beras_digiling || "-"} kg digiling`
+          : data.volume_beras_dikirim_karung
+            ? `${data.volume_beras_dikirim_karung} karung`
+            : data.volume_dibeli_ton
+              ? `${data.volume_dibeli_ton} ton`
+              : data.volume_dibeli_karung
+                ? `${data.volume_dibeli_karung} karung`
+                : raw.batchId,
+    details: data,
+    createdBy: raw.creator_id || "",
+    createdAt: raw.createdAt || "",
+  };
+}
 
 export const useBatchHistory = () => {
-  const user = getCurrentUser();
-  const email = user?.email ?? "";
-  const [batches, setBatches] = useState<BatchEntry[]>(() =>
-    email ? readBatches(email) : []
-  );
+  const [batches, setBatches] = useState<BatchEntry[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchBatches = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/my-batches");
+      const raw: any[] = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+      setBatches((Array.isArray(raw) ? raw : []).map(mapBatch));
+    } catch {
+      setBatches([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    if (!email) return;
-    const refresh = () => setBatches(readBatches(email));
-    const onCustom = () => refresh();
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === storageKey(email)) refresh();
-    };
-    window.addEventListener(EVENT_NAME, onCustom);
-    window.addEventListener("storage", onStorage);
-    return () => {
-      window.removeEventListener(EVENT_NAME, onCustom);
-      window.removeEventListener("storage", onStorage);
-    };
-  }, [email]);
+    fetchBatches();
+  }, [fetchBatches]);
 
-  const addBatch = useCallback(
-    (entry: Omit<BatchEntry, "createdBy" | "createdAt">) => {
-      if (!email) return null;
-      const newEntry: BatchEntry = {
-        ...entry,
-        createdBy: email,
-        createdAt: new Date().toISOString(),
-      };
-      const next = [newEntry, ...readBatches(email)];
-      localStorage.setItem(storageKey(email), JSON.stringify(next));
-      window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: { email } }));
-      return newEntry;
-    },
-    [email]
-  );
-
-  return { batches, addBatch, currentUserEmail: email };
+  return { batches, loading, refresh: fetchBatches };
 };

@@ -186,6 +186,17 @@ class RiceTraceabilityContract extends Contract {
     const receivedVolume = parseFloat(data.volume_gkg_masuk_kg);
     await this._validateAndDeductVolume(ctx, data.prev_batch_id, receivedVolume);
 
+    const beratBerasDigiling = parseFloat(data.berat_beras_digiling);
+    if (isNaN(beratBerasDigiling) || beratBerasDigiling <= 0) {
+      throw new Error('Invalid berat_beras_digiling: must be a positive number');
+    }
+
+    if (beratBerasDigiling > receivedVolume) {
+      throw new Error(
+        `Berat Beras Digiling (${beratBerasDigiling} kg) tidak boleh melebihi Volume GKG Masuk (${receivedVolume} kg)`
+      );
+    }
+
     const sniResult = validateSNI({
       derajat_sosoh: data.derajat_sosoh,
       kadar_air: data.kadar_air,
