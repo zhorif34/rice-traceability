@@ -24,20 +24,31 @@ INIT_OUTPUT=$(docker exec cli bash /tmp/init-channel.sh 2>&1)
 echo "${INIT_OUTPUT}"
 
 echo ""
-echo ">>> Step 4/9: Getting chaincode package ID..."
-PACKAGE_ID=$(echo "${INIT_OUTPUT}" | grep 'Chaincode code package identifier:' | awk '{print $NF}' | tail -1)
+echo ">>> Step 4/9: Getting committed chaincode package ID..."
+INSTALLED_JSON=$(docker exec cli peer lifecycle chaincode queryinstalled --output json 2>/dev/null || echo "{}")
+COMMITTED_ID=$(echo "$INSTALLED_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for cc in data.get('installed_chaincodes', []):
+    if 'references' in cc and 'mychannel' in cc['references']:
+        print(cc['package_id'])
+        break
+" 2>/dev/null || true)
 
-if [ -z "$PACKAGE_ID" ]; then
-    PACKAGE_ID=$(echo "${INIT_OUTPUT}" | grep -o 'riceTraceability:[a-f0-9]\{64\}' | tail -1)
+if [ -z "$COMMITTED_ID" ]; then
+    PACKAGE_ID=$(echo "${INIT_OUTPUT}" | grep 'Chaincode code package identifier:' | awk '{print $NF}' | tail -1)
+    if [ -z "$PACKAGE_ID" ]; then
+        PACKAGE_ID=$(echo "${INIT_OUTPUT}" | grep -o 'riceTraceability:[a-f0-9]\{64\}' | tail -1)
+    fi
+    if [ -z "$PACKAGE_ID" ]; then
+        echo "ERROR: Could not determine package ID. Falling back to riceTraceability:1.0"
+        export CHAINCODE_PKG_ID="riceTraceability:1.0"
+    else
+        COMMITTED_ID="$PACKAGE_ID"
+    fi
 fi
 
-if [ -z "$PACKAGE_ID" ]; then
-    echo "ERROR: Could not determine package ID. Falling back to riceTraceability:1.0"
-    export CHAINCODE_PKG_ID="riceTraceability:1.0"
-else
-    export CHAINCODE_PKG_ID="$PACKAGE_ID"
-fi
-
+export CHAINCODE_PKG_ID="$COMMITTED_ID"
 echo "Using chaincode package ID: $CHAINCODE_PKG_ID"
 
 echo ""
@@ -45,8 +56,25 @@ echo ">>> Step 5/9: Starting chaincode container..."
 docker rm -f riceTraceability_chaincode 2>/dev/null || true
 CHAINCODE_PKG_ID="$CHAINCODE_PKG_ID" docker compose -f network/docker-compose-net.yaml up -d --build chaincode
 
-echo "Waiting for chaincode to connect to peer..."
-sleep 5
+echo "Restarting peer to trigger chaincode registration..."
+docker restart peer0.org1.example.com
+
+echo "Waiting for chaincode to register with peer..."
+CC_MAX_RETRIES=30
+CC_RETRY=0
+while [ $CC_RETRY -lt $CC_MAX_RETRIES ]; do
+    sleep 2
+    if docker logs riceTraceability_chaincode 2>&1 | grep -q 'State transferred to "ready"'; then
+        echo "  Chaincode registered and ready!"
+        break
+    fi
+    CC_RETRY=$((CC_RETRY + 1))
+    echo "  Waiting for chaincode registration... ($CC_RETRY/$CC_MAX_RETRIES)"
+done
+
+if [ $CC_RETRY -ge $CC_MAX_RETRIES ]; then
+    echo "  WARNING: Chaincode did not register within timeout."
+fi
 
 echo ""
 echo ">>> Step 6/9: Starting Hyperledger Explorer..."
@@ -57,7 +85,7 @@ docker compose -f network/docker-compose-net.yaml up -d explorer.mynetwork.com
 
 echo ""
 echo ">>> Step 7/9: Starting application (backend, frontend, postgres, ngrok)..."
-docker compose up -d --build
+VITE_API_URL="/api" docker compose up -d --build
 
 echo ""
 echo ">>> Step 8/9: Waiting for ngrok tunnel to come online..."
@@ -83,10 +111,6 @@ else
 fi
 
 echo ""
-echo ">>> Step 9/9: Restarting frontend with API proxy..."
-VITE_API_URL="/api" docker compose up -d --force-recreate frontend
-
-echo ""
 echo "============================================"
 echo "  All services are running!"
 echo "============================================"
@@ -100,8 +124,7 @@ echo "  Orderer:      localhost:7050"
 echo "  CouchDB:      http://localhost:5984/_utils"
 echo "    Login:      admin / adminpw"
 echo ""
-echo "  --- Ngrok Public URLs ---"
-echo "  Backend:      $NGROK_BACKEND_URL"
-echo "  Frontend:     $NGROK_FRONTEND_URL"
+echo "  --- Ngrok Public URL ---"
+echo "  App:          $NGROK_URL"
 echo "  Ngrok UI:     http://localhost:4040"
 echo "============================================"

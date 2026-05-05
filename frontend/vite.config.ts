@@ -6,6 +6,7 @@ export default defineConfig({
   server: {
     host: "::",
     port: 3000,
+    allowedHosts: true,
     proxy: {
       "/api": {
         target: `http://${process.env.VITE_BACKEND_HOST || "backend"}:5000`,

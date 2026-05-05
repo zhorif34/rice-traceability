@@ -2,35 +2,21 @@
 set -e
 API=http://localhost:5000/api
 
-echo "=== Registering users ==="
+get_token() {
+  curl -s -X POST $API/auth/login -H "Content-Type: application/json" -d "{\"email\":\"$1\",\"password\":\"$2\"}" | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])"
+}
 
-PETANI_RES=$(curl -s -X POST $API/auth/register -H "Content-Type: application/json" -d '{"email":"petani@test.com","password":"password123","role":"petani","entityName":"Petani Sejahtera"}')
-echo "Petani: $PETANI_RES"
-PETANI_TOKEN=$(echo $PETANI_RES | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
+echo "=== Logging in users ==="
+PETANI_TOKEN=$(get_token "petani@test.com" "password123")
+PENGEPUL_TOKEN=$(get_token "pengepul@test.com" "password123")
+RMU_TOKEN=$(get_token "rmu@test.com" "password123")
+DIST_TOKEN=$(get_token "distributor@test.com" "password123")
+BULOG_TOKEN=$(get_token "bulog@test.com" "password123")
+RET_TOKEN=$(get_token "retailer@test.com" "password123")
+echo "All users logged in."
 
-PENGEPUL_RES=$(curl -s -X POST $API/auth/register -H "Content-Type: application/json" -d '{"email":"pengepul@test.com","password":"password123","role":"pengepul","entityName":"Pengepul Makmur"}')
-echo "Pengepul registered"
-PENGEPUL_TOKEN=$(echo $PENGEPUL_RES | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
-
-RMU_RES=$(curl -s -X POST $API/auth/register -H "Content-Type: application/json" -d '{"email":"rmu@test.com","password":"password123","role":"rmu","entityName":"Penggilingan Padi Jaya"}')
-echo "RMU registered"
-RMU_TOKEN=$(echo $RMU_RES | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
-
-DIST_RES=$(curl -s -X POST $API/auth/register -H "Content-Type: application/json" -d '{"email":"distributor@test.com","password":"password123","role":"distributor","entityName":"Distributor Beras Nusantara"}')
-echo "Distributor registered"
-DIST_TOKEN=$(echo $DIST_RES | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
-
-BULOG_RES=$(curl -s -X POST $API/auth/register -H "Content-Type: application/json" -d '{"email":"bulog@test.com","password":"password123","role":"bulog","entityName":"BULOG Cabang Jawa Barat"}')
-echo "Bulog registered"
-BULOG_TOKEN=$(echo $BULOG_RES | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
-
-RET_RES=$(curl -s -X POST $API/auth/register -H "Content-Type: application/json" -d '{"email":"retailer@test.com","password":"password123","role":"retailer","entityName":"Toko Beras Sehat"}')
-echo "Retailer registered"
-RET_TOKEN=$(echo $RET_RES | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
-
-ADMIN_RES=$(curl -s -X POST $API/auth/register -H "Content-Type: application/json" -d '{"email":"admin@test.com","password":"password123","role":"admin","entityName":"System Admin"}')
-echo "Admin registered"
-ADMIN_TOKEN=$(echo $ADMIN_RES | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
+ADMIN_TOKEN=$(get_token "admin@test.com" "password123")
+echo "Admin logged in."
 
 echo ""
 echo "=== Step 1: Petani creates batch ==="
@@ -57,7 +43,7 @@ echo "=== Step 3: RMU creates batch (with SNI validation) ==="
 RMU_BRES=$(curl -s -X POST $API/rmu/batch \
   -H "Authorization: Bearer $RMU_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\"prev_batch_id\":\"$COLLECTOR_BATCH\",\"volume_gkg_masuk_kg\":\"5000\",\"kadar_air_masuk\":\"18\",\"pemeriksaan_visual\":\"Lolos\",\"tanggal_penerimaan\":\"2025-05-13\",\"supplier_id\":\"SUP-001\",\"jenis_kemasan\":\"Karung 25kg\",\"berat_netto\":\"25\",\"tanggal_pengemasan\":\"2025-05-14\",\"nomor_batch_beras\":\"RICE-2025-001\",\"sertifikat_mutu_sni\":\"SNI-2025-001\",\"kadar_air\":\"13\",\"derajat_sosoh\":\"96\",\"butir_kepala\":\"80\",\"butir_patah\":\"18\",\"butir_menir\":\"2\"}")
+  -d "{\"prev_batch_id\":\"$COLLECTOR_BATCH\",\"volume_gkg_masuk_kg\":\"5000\",\"berat_beras_digiling\":\"3200\",\"kadar_air_masuk\":\"18\",\"pemeriksaan_visual\":\"Lolos\",\"tanggal_penerimaan\":\"2025-05-13\",\"supplier_id\":\"SUP-001\",\"jenis_kemasan\":\"Karung 25kg\",\"berat_netto\":\"25\",\"tanggal_pengemasan\":\"2025-05-14\",\"nomor_batch_beras\":\"RICE-2025-001\",\"sertifikat_mutu_sni\":\"SNI-2025-001\",\"kadar_air\":\"13\",\"derajat_sosoh\":\"96\",\"butir_kepala\":\"80\",\"butir_patah\":\"18\",\"butir_menir\":\"2\"}")
 echo "$RMU_BRES" | python3 -m json.tool
 RMU_BATCH=$(echo $RMU_BRES | python3 -c "import sys,json;print(json.load(sys.stdin)['batchId'])")
 echo "RMU Batch ID: $RMU_BATCH"
@@ -87,7 +73,7 @@ echo "=== Step 6: Retailer creates batch (QR generated) ==="
 RET_BRES=$(curl -s -X POST $API/retailer/batch \
   -H "Authorization: Bearer $RET_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\"prev_batch_id\":\"$BULOG_BATCH\",\"nomor_invoice\":\"INV-2025-001\",\"volume_dibeli_karung\":\"120\",\"tanggal_terima\":\"2025-05-19\",\"nomor_batch_beras\":\"RICE-2025-001\",\"harga_eceran\":\"14500\",\"tanggal_penjualan\":\"2025-05-20\",\"keterangan_berat_bersih\":\"true\",\"logo_halal\":\"true\",\"keterangan_nama_alamat_produsen\":\"true\",\"tanggal_kadaluarsa\":\"2026-05-20\"}")
+  -d "{\"prev_batch_id\":\"$BULOG_BATCH\",\"nomor_invoice\":\"INV-2025-001\",\"volume_dibeli_karung\":\"3\",\"tanggal_terima\":\"2025-05-19\",\"nomor_batch_beras\":\"RICE-2025-001\",\"harga_eceran\":\"14500\",\"tanggal_penjualan\":\"2025-05-20\",\"keterangan_berat_bersih\":\"true\",\"logo_halal\":\"true\",\"keterangan_nama_alamat_produsen\":\"true\",\"tanggal_kadaluarsa\":\"2026-05-20\"}")
 echo "$RET_BRES" | python3 -c "import sys,json;d=json.load(sys.stdin);print(json.dumps({k:v for k,v in d.items() if k != 'qrCode'},indent=2))"
 RET_BATCH=$(echo $RET_BRES | python3 -c "import sys,json;print(json.load(sys.stdin)['batchId'])")
 echo "Retailer Batch ID: $RET_BATCH"
