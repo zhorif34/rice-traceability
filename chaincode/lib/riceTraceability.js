@@ -23,6 +23,15 @@ const ALLOWED_PREV = {
   retailer: ['rmu', 'distributor', 'bulog'],
 };
 
+const VOLUME_FIELDS = {
+  petani: 'volume_gkg_kg',
+  pengepul: 'volume_gkg_diterima_kg',
+  rmu: 'volume_gkg_masuk_kg',
+  distributor: 'volume_beras_dikirim_karung',
+  bulog: 'volume_dibeli_ton',
+  retailer: 'volume_dibeli_karung',
+};
+
 class RiceTraceabilityContract extends Contract {
   constructor() {
     super('RiceTraceabilityContract');
@@ -87,6 +96,38 @@ class RiceTraceabilityContract extends Contract {
     }
   }
 
+  async _validateAndDeductVolume(ctx, prevBatchId, receivedVolume) {
+    const prevBatchBytes = await ctx.stub.getState(prevBatchId);
+    if (prevBatchBytes.length === 0) {
+      throw new Error(`Previous batch ${prevBatchId} does not exist`);
+    }
+
+    const prevBatch = JSON.parse(prevBatchBytes.toString());
+
+    if (prevBatch.available_volume === undefined || prevBatch.available_volume === null) {
+      throw new Error(`Parent batch ${prevBatchId} does not have volume tracking data`);
+    }
+
+    const received = parseFloat(receivedVolume);
+    const available = parseFloat(prevBatch.available_volume);
+
+    if (isNaN(received) || received <= 0) {
+      throw new Error(`Invalid received volume: ${receivedVolume}. Must be a positive number.`);
+    }
+
+    if (received > available) {
+      throw new Error(
+        `Volume exceeds available remaining stock. ` +
+        `Requested: ${received}, Available: ${available} in batch ${prevBatchId}`
+      );
+    }
+
+    prevBatch.available_volume = available - received;
+    prevBatch.updatedAt = new Date().toISOString();
+
+    await ctx.stub.putState(prevBatchId, Buffer.from(stringify(sortKeysRecursive(prevBatch))));
+  }
+
   async createFarmerBatch(ctx, batchId, dataJson) {
     const existing = await ctx.stub.getState(batchId);
     if (existing.length > 0) {
@@ -94,9 +135,19 @@ class RiceTraceabilityContract extends Contract {
     }
 
     const data = JSON.parse(dataJson);
+    const creatorId = data.creator_id || '';
+    const initialVolume = parseFloat(data.volume_gkg_kg);
+
+    if (isNaN(initialVolume) || initialVolume <= 0) {
+      throw new Error('Invalid volume_gkg_kg: must be a positive number');
+    }
+
     const batch = {
       batchId,
       entityType: 'petani',
+      creator_id: creatorId,
+      initial_volume: initialVolume,
+      available_volume: initialVolume,
       data,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -110,9 +161,15 @@ class RiceTraceabilityContract extends Contract {
     const data = JSON.parse(dataJson);
     await this._validatePrevBatch(ctx, data.prev_batch_id, 'pengepul');
 
+    const receivedVolume = parseFloat(data.volume_gkg_diterima_kg);
+    await this._validateAndDeductVolume(ctx, data.prev_batch_id, receivedVolume);
+
     const batch = {
       batchId,
       entityType: 'pengepul',
+      creator_id: data.creator_id || '',
+      initial_volume: receivedVolume,
+      available_volume: receivedVolume,
       data,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -125,6 +182,9 @@ class RiceTraceabilityContract extends Contract {
   async createRMUBatch(ctx, batchId, dataJson) {
     const data = JSON.parse(dataJson);
     await this._validatePrevBatch(ctx, data.prev_batch_id, 'rmu');
+
+    const receivedVolume = parseFloat(data.volume_gkg_masuk_kg);
+    await this._validateAndDeductVolume(ctx, data.prev_batch_id, receivedVolume);
 
     const sniResult = validateSNI({
       derajat_sosoh: data.derajat_sosoh,
@@ -141,6 +201,9 @@ class RiceTraceabilityContract extends Contract {
     const batch = {
       batchId,
       entityType: 'rmu',
+      creator_id: data.creator_id || '',
+      initial_volume: receivedVolume,
+      available_volume: receivedVolume,
       data,
       sniValid: true,
       createdAt: new Date().toISOString(),
@@ -155,9 +218,15 @@ class RiceTraceabilityContract extends Contract {
     const data = JSON.parse(dataJson);
     await this._validatePrevBatch(ctx, data.prev_batch_id, 'distributor');
 
+    const receivedVolume = parseFloat(data.volume_beras_dikirim_karung);
+    await this._validateAndDeductVolume(ctx, data.prev_batch_id, receivedVolume);
+
     const batch = {
       batchId,
       entityType: 'distributor',
+      creator_id: data.creator_id || '',
+      initial_volume: receivedVolume,
+      available_volume: receivedVolume,
       data,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -171,9 +240,15 @@ class RiceTraceabilityContract extends Contract {
     const data = JSON.parse(dataJson);
     await this._validatePrevBatch(ctx, data.prev_batch_id, 'bulog');
 
+    const receivedVolume = parseFloat(data.volume_dibeli_ton);
+    await this._validateAndDeductVolume(ctx, data.prev_batch_id, receivedVolume);
+
     const batch = {
       batchId,
       entityType: 'bulog',
+      creator_id: data.creator_id || '',
+      initial_volume: receivedVolume,
+      available_volume: receivedVolume,
       data,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -187,9 +262,15 @@ class RiceTraceabilityContract extends Contract {
     const data = JSON.parse(dataJson);
     await this._validatePrevBatch(ctx, data.prev_batch_id, 'retailer');
 
+    const receivedVolume = parseFloat(data.volume_dibeli_karung);
+    await this._validateAndDeductVolume(ctx, data.prev_batch_id, receivedVolume);
+
     const batch = {
       batchId,
       entityType: 'retailer',
+      creator_id: data.creator_id || '',
+      initial_volume: receivedVolume,
+      available_volume: receivedVolume,
       data,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -235,6 +316,23 @@ class RiceTraceabilityContract extends Contract {
     while (!result.done) {
       const record = JSON.parse(result.value.value.toString());
       results.push(record);
+      result = await iterator.next();
+    }
+
+    return JSON.stringify(results);
+  }
+
+  async getBatchesByCreator(ctx, creatorId) {
+    const queryString = JSON.stringify({
+      selector: { creator_id: creatorId },
+    });
+
+    const iterator = await ctx.stub.getQueryResult(queryString);
+    const results = [];
+
+    let result = await iterator.next();
+    while (!result.done) {
+      results.push(JSON.parse(result.value.value.toString()));
       result = await iterator.next();
     }
 

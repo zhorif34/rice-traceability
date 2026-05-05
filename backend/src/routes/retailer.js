@@ -19,7 +19,7 @@ router.post('/batch', authMiddleware, roleGuard('retailer'), async (req, res) =>
     validateRequiredFields(req.body, required);
 
     const batchId = `RETAILER_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-    const result = await submitTransaction('createRetailerBatch', batchId, JSON.stringify(req.body));
+    const result = await submitTransaction('createRetailerBatch', batchId, JSON.stringify({ ...req.body, creator_id: req.user.userId }));
     const qrCode = await generateQRCode(batchId);
     res.status(201).json({ batchId, qrCode, ...result });
   } catch (err) {

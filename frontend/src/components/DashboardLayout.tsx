@@ -10,7 +10,7 @@ const DashboardLayout = ({ title, entityLabel, children }: DashboardLayoutProps)
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <nav className="bg-background border-b border-border sticky top-0 z-50">
+      <nav className="bg-white border-b border-border shadow-md sticky top-0 z-50">
         <div className="container mx-auto flex items-center justify-between h-16 px-4">
           <Link to="/" className="flex items-center gap-2"><img src="/images/logo-ambapari.png" alt="Ambapari" className="h-8 w-8 object-contain" /><span className="font-display text-xl font-bold text-foreground">Ambapari</span></Link>
           <div className="flex items-center gap-3">

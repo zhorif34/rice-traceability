@@ -19,5 +19,5 @@
     "target": "ES2020",
     "useDefineForClassFields": true
   },
-  "include": ["src"]
+  "include": ["src", "tailwind.config.ts"]
 }

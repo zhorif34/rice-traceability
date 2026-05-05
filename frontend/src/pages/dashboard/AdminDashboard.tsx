@@ -56,7 +56,7 @@ const AdminDashboard = () => {
         </Card>
       </div>
       <Dialog open={!!selectedBatchId} onOpenChange={() => { setSelectedBatchId(null); setSelectedTrace(null); }}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-white text-foreground">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-primary" />Ketelusuran: {selectedBatchId}</DialogTitle></DialogHeader>
           {selectedTrace && selectedTrace.length > 0 && (<div className="relative mt-4"><div className="absolute left-8 top-0 bottom-0 w-0.5 bg-border" /><div className="space-y-6">{selectedTrace.map((step: any, i: number) => {
             const Icon = entityIcons[step.entityType] || Sprout;

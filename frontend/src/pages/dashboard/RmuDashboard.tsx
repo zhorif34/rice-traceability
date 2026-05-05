@@ -1,5 +1,6 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
+import BatchHistoryCard from "@/components/BatchHistoryCard";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Factory, Package, ShieldCheck } from "lucide-react";
 import api from "@/services/api";
+import { useBatchHistory } from "@/hooks/useBatchHistory";
 
 const RmuDashboard = () => {
   const [prevBatchId, setPrevBatchId] = useState("");
@@ -14,6 +16,7 @@ const RmuDashboard = () => {
   const [pack, setPack] = useState({ type: "", weight: "", date: "", batchNo: "", sniCert: "" });
   const [sni, setSni] = useState({ sosoh: "", moisture: "", head: "", broken: "", menir: "" });
   const [loading, setLoading] = useState(false);
+  const { batches, addBatch } = useBatchHistory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,13 +31,23 @@ const RmuDashboard = () => {
         butir_kepala: sni.head || undefined, butir_patah: sni.broken || undefined,
         butir_menir: sni.menir || undefined,
       });
-      toast.success(`Batch ID: ${res.data.batchId}`, { description: "SNI tervalidasi!" });
+      const batchId = res.data.batchId;
+      addBatch({
+        batchId,
+        entity: "rmu",
+        summary: `Sosoh ${sni.sosoh || "-"}% • Air ${sni.moisture || "-"}% • ${pack.weight || "0"} kg`,
+        details: { prevBatchId, ...recv, ...pack, ...sni, statusSNI: "Lolos" },
+      });
+      toast.success(`Batch ID: ${batchId}`, { description: "SNI tervalidasi!" });
     } catch (err: any) { toast.error(err.response?.data?.error || "Gagal."); } finally { setLoading(false); }
   };
 
   return (
     <DashboardLayout title="Dasbor RMU" entityLabel="Penggilingan Padi">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
+        <BatchHistoryCard batches={batches} entityLabel="RMU" />
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-6 mt-6">
         <Card><CardHeader><CardTitle>Batch ID dari Petani/Pengepul</CardTitle></CardHeader><CardContent><div className="space-y-2"><Label>ID Batch (Petani atau Pengepul)</Label><Input placeholder="cth. FARMER_... atau COLLECTOR_..." value={prevBatchId} onChange={e => setPrevBatchId(e.target.value)} required /></div></CardContent></Card>
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><Factory className="w-5 h-5 text-primary" />Data Penerimaan</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">

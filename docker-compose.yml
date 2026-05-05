@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -22,8 +20,8 @@ services:
 
   backend:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile.dev
     ports:
       - "5000:5000"
     environment:
@@ -46,6 +44,15 @@ services:
       FABRIC_CERT: /app/fabric/crypto/admin-cert.pem
       FABRIC_KEY: /app/fabric/crypto/admin-key.pem
       FABRIC_MSP_ID: Org1MSP
+    volumes:
+      - ./backend/src/app.js:/app/src/app.js
+      - ./backend/src/routes:/app/src/routes
+      - ./backend/src/services:/app/src/services
+      - ./backend/src/middleware:/app/src/middleware
+      - ./backend/src/models:/app/src/models
+      - ./backend/src/config:/app/src/config
+      - ./backend/src/utils:/app/src/utils
+      - ./backend/fabric/crypto:/app/fabric/crypto
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,17 +64,61 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        VITE_API_URL: http://localhost:5000/api
+      dockerfile: Dockerfile.dev
     ports:
-      - "3000:80"
-      - "3443:443"
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+      - ./frontend/tailwind.config.ts:/app/tailwind.config.ts
+      - ./frontend/postcss.config.js:/app/postcss.config.js
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+    environment:
+      - VITE_API_URL=http://localhost:5000/api
+      - CHOKIDAR_USEPOLLING=true
     depends_on:
       - backend
     restart: unless-stopped
     networks:
       - app-network
+
+  explorer-db:
+    image: ghcr.io/hyperledger-labs/explorer-db:latest
+    environment:
+      DATABASE_DATABASE: fabricexplorer
+      DATABASE_USERNAME: hppoc
+      DATABASE_PASSWORD: password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hppoc -d fabricexplorer"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - fabric-network
+
+  explorer:
+    image: ghcr.io/hyperledger-labs/explorer:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./explorer/config.json:/opt/explorer/app/platform/fabric/config.json
+      - ./explorer/connection-profile:/opt/explorer/app/platform/fabric/connection-profile
+      - ./organizations:/opt/explorer/app/platform/fabric/crypto
+    environment:
+      - DATABASE_HOST=explorer-db
+      - DATABASE_DATABASE=fabricexplorer
+      - DATABASE_USERNAME=hppoc
+      - DATABASE_PASSWD=password
+      - LOG_LEVEL_APP=info
+    depends_on:
+      explorer-db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - fabric-network
 
 networks:
   app-network:

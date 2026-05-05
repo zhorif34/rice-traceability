@@ -1,5 +1,6 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
+import BatchHistoryCard from "@/components/BatchHistoryCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Package } from "lucide-react";
 import api from "@/services/api";
+import { useBatchHistory } from "@/hooks/useBatchHistory";
 
 const CollectorDashboard = () => {
   const [form, setForm] = useState({ prevBatchId: "", consignmentNo: "", gkgVolume: "", farmerOrigin: "", dispatchDate: "" });
   const [loading, setLoading] = useState(false);
+  const { batches, addBatch } = useBatchHistory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,14 +24,24 @@ const CollectorDashboard = () => {
         volume_gkg_diterima_kg: form.gkgVolume, asal_petani_lokasi: form.farmerOrigin,
         tanggal_pengiriman: form.dispatchDate,
       });
-      toast.success(`Batch ID: ${res.data.batchId}`, { description: "Data pengepul berhasil dicatat." });
+      const batchId = res.data.batchId;
+      addBatch({
+        batchId,
+        entity: "pengepul",
+        summary: `Dari ${form.prevBatchId || "-"} • ${form.gkgVolume || "0"} kg`,
+        details: { ...form },
+      });
+      toast.success(`Batch ID: ${batchId}`, { description: "Data pengepul berhasil dicatat." });
       setForm({ prevBatchId: "", consignmentNo: "", gkgVolume: "", farmerOrigin: "", dispatchDate: "" });
     } catch (err: any) { toast.error(err.response?.data?.error || "Gagal."); } finally { setLoading(false); }
   };
 
   return (
     <DashboardLayout title="Dasbor Pengepul" entityLabel="Pengepul">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
+        <BatchHistoryCard batches={batches} entityLabel="Pengepul" />
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-6 mt-6">
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><Package className="w-5 h-5 text-primary" />Data Penerimaan</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2"><Label>ID Batch dari Petani</Label><Input placeholder="cth. FARMER_..." value={form.prevBatchId} onChange={e => setForm({ ...form, prevBatchId: e.target.value })} required /></div>

@@ -13,6 +13,7 @@ const bulogRoutes = require('./routes/bulog');
 const retailerRoutes = require('./routes/retailer');
 const traceabilityRoutes = require('./routes/traceability');
 const adminRoutes = require('./routes/admin');
+const myBatchesRoutes = require('./routes/myBatches');
 const { connectDB } = require('./config/database');
 const { initFabricGateway } = require('./services/fabricService');
 
@@ -31,6 +32,7 @@ app.use('/api/bulog', bulogRoutes);
 app.use('/api/retailer', retailerRoutes);
 app.use('/api/traceability', traceabilityRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/my-batches', myBatchesRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

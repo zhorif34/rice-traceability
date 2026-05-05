@@ -14,7 +14,7 @@ router.post('/batch', authMiddleware, roleGuard('pengepul'), async (req, res) =>
     validateRequiredFields(req.body, required);
 
     const batchId = `COLLECTOR_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-    const result = await submitTransaction('createCollectorBatch', batchId, JSON.stringify(req.body));
+    const result = await submitTransaction('createCollectorBatch', batchId, JSON.stringify({ ...req.body, creator_id: req.user.userId }));
     res.status(201).json({ batchId, ...result });
   } catch (err) {
     res.status(400).json({ error: err.message });

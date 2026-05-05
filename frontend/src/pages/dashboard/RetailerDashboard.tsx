@@ -1,5 +1,6 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
+import BatchHistoryCard from "@/components/BatchHistoryCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,12 +9,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { ShoppingBag, ClipboardCheck } from "lucide-react";
 import api from "@/services/api";
+import { useBatchHistory } from "@/hooks/useBatchHistory";
 
 const RetailerDashboard = () => {
   const [prevBatchId, setPrevBatchId] = useState("");
   const [purchase, setPurchase] = useState({ invoice: "", volume: "", dateRecv: "", batchNo: "", price: "", dateSale: "" });
   const [checklist, setChecklist] = useState({ netWeight: false, halal: false, name: false, address: false, expiry: false });
   const [loading, setLoading] = useState(false);
+  const { batches, addBatch } = useBatchHistory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,14 +31,27 @@ const RetailerDashboard = () => {
         logo_halal: String(checklist.halal), keterangan_nama_alamat_produsen: String(checklist.name),
         tanggal_kadaluarsa: new Date(Date.now() + 365*24*60*60*1000).toISOString().split('T')[0],
       });
-      toast.success(`Batch ID: ${res.data.batchId}`, { description: "QR Code dihasilkan!" });
+      const batchId = res.data.batchId;
+      addBatch({
+        batchId,
+        entity: "retailer",
+        summary: `Faktur ${purchase.invoice || "-"} • ${purchase.volume || "0"} karung • Rp ${purchase.price || "0"}/kg`,
+        details: {
+          prevBatchId, ...purchase,
+          ...Object.fromEntries(Object.entries(checklist).map(([k, v]) => [k, v ? "Ya" : "Tidak"])),
+        },
+      });
+      toast.success(`Batch ID: ${batchId}`, { description: "QR Code dihasilkan!" });
       if (res.data.qrCode) { const w = window.open('', '_blank'); if (w) { w.document.write(`<img src="${res.data.qrCode}" />`); w.document.title = "QR Code"; } }
     } catch (err: any) { toast.error(err.response?.data?.error || "Gagal."); } finally { setLoading(false); }
   };
 
   return (
     <DashboardLayout title="Dasbor Pengecer" entityLabel="Pengecer">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
+        <BatchHistoryCard batches={batches} entityLabel="Pengecer" />
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-6 mt-6">
         <Card><CardHeader><CardTitle>Batch ID dari RMU/Distributor/Bulog</CardTitle></CardHeader><CardContent><div className="space-y-2"><Label>ID Batch (RMU, Distributor, atau Bulog)</Label><Input placeholder="cth. RMU_... / DISTRIBUTOR_... / BULOG_..." value={prevBatchId} onChange={e => setPrevBatchId(e.target.value)} required /></div></CardContent></Card>
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><ShoppingBag className="w-5 h-5 text-primary" />Data Pembelian & Penjualan</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">

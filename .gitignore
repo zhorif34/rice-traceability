@@ -18,3 +18,5 @@ build/
 *:Zone.Identifier
 deepseek_text_*
 chaincode/test-tls.js
+backend/fabric/crypto/
+Coding Batch ID History.txt

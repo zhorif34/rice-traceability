@@ -65,7 +65,7 @@ dengan identitas batch beras yang telah terbentuk sebelumnya sehingga
 riwayat beras tetap terjaga secara berkelanjutan. Backend memproses dan
 mencatat data penggilingan ke dalam blockchain untuk memastikan bahwa
 informasi terkait kualitas dan proses pengolahan beras tidak dapat
-dimanipulasi. Setelah itu, sistem akan generate Batch ID adri bulog.
+dimanipulasi. Setelah itu, sistem akan generate Batch ID dari bulog.
 
 Selanjutnya, pada tahap entitas Retailer. Retailer dapat memasukkan
 batch ID dari bulog atau RMU atau Distributor lalu jika batch yang

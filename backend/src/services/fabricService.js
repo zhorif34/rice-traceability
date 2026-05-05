@@ -55,6 +55,15 @@ const SNI_THRESHOLDS = {
   butir_menir: { max: 3 },
 };
 
+const VOLUME_FIELDS = {
+  petani: 'volume_gkg_kg',
+  pengepul: 'volume_gkg_diterima_kg',
+  rmu: 'volume_gkg_masuk_kg',
+  distributor: 'volume_beras_dikirim_karung',
+  bulog: 'volume_dibeli_ton',
+  retailer: 'volume_dibeli_karung',
+};
+
 function getConsumersOfPrevBatch(prevBatchId) {
   const consumers = [];
   for (const batch of mockStore.values()) {
@@ -128,6 +137,32 @@ function mockCreateBatch(batchId, entityType, dataJson, validateSNI) {
     throw new Error(`Batch ${entityType} wajib memiliki prev_batch_id dari ${allowedPrevTypes.join(' atau ')}`);
   }
 
+  const volumeField = VOLUME_FIELDS[entityType];
+  const receivedVolume = parseFloat(data[volumeField]);
+
+  if (isNaN(receivedVolume) || receivedVolume <= 0) {
+    throw new Error(`Invalid ${volumeField}: must be a positive number`);
+  }
+
+  if (data.prev_batch_id) {
+    const parentBatch = mockStore.get(data.prev_batch_id);
+
+    if (parentBatch.available_volume === undefined || parentBatch.available_volume === null) {
+      throw new Error(`Parent batch ${data.prev_batch_id} does not have volume tracking data`);
+    }
+
+    const available = parseFloat(parentBatch.available_volume);
+    if (receivedVolume > available) {
+      throw new Error(
+        `Volume exceeds available remaining stock. ` +
+        `Requested: ${receivedVolume}, Available: ${available} in batch ${data.prev_batch_id}`
+      );
+    }
+
+    parentBatch.available_volume = available - receivedVolume;
+    parentBatch.updatedAt = new Date().toISOString();
+  }
+
   if (validateSNI) {
     const errors = [];
     if (data.kadar_air == null) {
@@ -155,6 +190,9 @@ function mockCreateBatch(batchId, entityType, dataJson, validateSNI) {
   const batch = {
     batchId,
     entityType,
+    creator_id: data.creator_id || '',
+    initial_volume: receivedVolume,
+    available_volume: receivedVolume,
     data,
     ...(validateSNI ? { sniValid: true } : {}),
     createdAt: new Date().toISOString(),
@@ -188,6 +226,13 @@ function mockEvaluateTransaction(fnName, ...args) {
       const results = [];
       for (const batch of mockStore.values()) {
         if (batch.entityType === args[0]) results.push(batch);
+      }
+      return results;
+    }
+    case 'getBatchesByCreator': {
+      const results = [];
+      for (const batch of mockStore.values()) {
+        if (batch.creator_id === args[0]) results.push(batch);
       }
       return results;
     }

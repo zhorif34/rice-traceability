@@ -3,37 +3,24 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/services/api";
-
-const entities = [
-  { value: "petani", label: "Petani" },
-  { value: "pengepul", label: "Pengepul" },
-  { value: "rmu", label: "RMU (Penggilingan Padi)" },
-  { value: "distributor", label: "Distributor" },
-  { value: "bulog", label: "Bulog" },
-  { value: "retailer", label: "Pengecer" },
-  { value: "admin", label: "Admin" },
-];
 
 const Login = () => {
   const [showPass, setShowPass] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [entity, setEntity] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!entity) { toast.error("Silakan pilih jenis entitas Anda."); return; }
     setLoading(true);
     try {
       const res = await api.post("/auth/login", { email, password });
       const { token, user } = res.data;
-      const role = user?.role || entity;
+      const role = user?.role;
       localStorage.setItem("ambapari_user", JSON.stringify({ token, ...user }));
       toast.success("Login berhasil!");
       navigate(`/dashboard/${role}`);
@@ -68,9 +55,6 @@ const Login = () => {
               <div className="relative"><Input id="password" type={showPass ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
                 <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">{showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
               </div>
-            </div>
-            <div className="space-y-2"><Label htmlFor="entity">Masuk sebagai</Label>
-              <Select value={entity} onValueChange={setEntity}><SelectTrigger><SelectValue placeholder="Pilih entitas Anda" /></SelectTrigger><SelectContent className="bg-white">{entities.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}</SelectContent></Select>
             </div>
             <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white" size="lg" disabled={loading}>{loading ? "Memproses..." : "Masuk"}</Button>
           </form>

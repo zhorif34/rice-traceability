@@ -6,8 +6,8 @@ const HeroSection = () => (
   <section className="relative min-h-[90vh] flex items-center overflow-hidden">
     <div className="absolute inset-0">
       <img src="/images/hero-rice.jpg" alt="Sawah padi" className="w-full h-full object-cover" width={1920} height={1080} />
-      <div className="absolute inset-0 bg-black/50" />
-      <div className="absolute inset-0 bg-gradient-to-r from-foreground/95 via-foreground/85 to-black/50" />
+      <div className="absolute inset-0 bg-black/30" />
+      <div className="absolute inset-0 bg-gradient-to-r from-foreground/60 via-foreground/40 to-black/20" />
     </div>
     <div className="relative container mx-auto px-4 py-32">
       <div className="max-w-2xl animate-fade-up">

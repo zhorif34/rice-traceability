@@ -1,5 +1,6 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
+import BatchHistoryCard from "@/components/BatchHistoryCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,12 +8,14 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ShoppingCart, TrendingUp } from "lucide-react";
 import api from "@/services/api";
+import { useBatchHistory } from "@/hooks/useBatchHistory";
 
 const BulogDashboard = () => {
   const [prevBatchId, setPrevBatchId] = useState("");
   const [purchase, setPurchase] = useState({ po: "", volume: "", price: "", quality: "", warehouse: "", date: "" });
   const [sales, setSales] = useState({ so: "", volume: "", recipient: "", date: "" });
   const [loading, setLoading] = useState(false);
+  const { batches, addBatch } = useBatchHistory();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,14 +28,24 @@ const BulogDashboard = () => {
         nomor_so: sales.so, volume_dijual_ton: sales.volume, penerima: sales.recipient,
         tanggal_pengiriman_gudang: sales.date,
       });
-      toast.success(`Batch ID: ${res.data.batchId}`, { description: "Data Bulog dicatat." });
+      const batchId = res.data.batchId;
+      addBatch({
+        batchId,
+        entity: "bulog",
+        summary: `PO ${purchase.po || "-"} • ${purchase.volume || "0"} ton • Gudang ${purchase.warehouse || "-"}`,
+        details: { prevBatchId, ...purchase, ...sales },
+      });
+      toast.success(`Batch ID: ${batchId}`, { description: "Data Bulog dicatat." });
       if (res.data.qrCode) { const w = window.open('', '_blank'); if (w) { w.document.write(`<img src="${res.data.qrCode}" />`); w.document.title = "QR Code"; } }
     } catch (err: any) { toast.error(err.response?.data?.error || "Gagal."); } finally { setLoading(false); }
   };
 
   return (
     <DashboardLayout title="Dasbor Bulog" entityLabel="Bulog">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
+        <BatchHistoryCard batches={batches} entityLabel="Bulog" />
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-6 mt-6">
         <Card><CardHeader><CardTitle>Batch ID dari RMU/Distributor</CardTitle></CardHeader><CardContent><div className="space-y-2"><Label>ID Batch (RMU atau Distributor)</Label><Input placeholder="cth. RMU_... atau DISTRIBUTOR_..." value={prevBatchId} onChange={e => setPrevBatchId(e.target.value)} required /></div></CardContent></Card>
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><ShoppingCart className="w-5 h-5 text-primary" />Data Pembelian</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
