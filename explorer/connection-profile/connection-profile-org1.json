@@ -10,6 +10,7 @@
     },
     "enableAuthentication": true,
     "organization": "Org1MSP",
+    "discovery-as-localhost": false,
     "connection": {
       "timeout": {
         "peer": { "endorser": "300" },
@@ -45,7 +46,10 @@
       "tlsCACerts": {
         "path": "/opt/explorer/app/platform/fabric/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"
       },
-      "url": "grpcs://peer0.org1.example.com:7051"
+      "url": "grpcs://peer0.org1.example.com:7051",
+      "grpcOptions": {
+        "ssl-target-name-override": "peer0.org1.example.com"
+      }
     }
   },
   "orderers": {
@@ -53,7 +57,10 @@
       "tlsCACerts": {
         "path": "/opt/explorer/app/platform/fabric/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/tls/ca.crt"
       },
-      "url": "grpcs://orderer.example.com:7050"
+      "url": "grpcs://orderer.example.com:7050",
+      "grpcOptions": {
+        "ssl-target-name-override": "orderer.example.com"
+      }
     }
   }
 }

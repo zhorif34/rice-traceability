@@ -39,6 +39,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+app.use((err, req, res, _next) => {
+  console.error('[ERROR]', err.message || err);
+  res.status(500).json({ error: err.message || 'Internal server error' });
+});
+
 async function start() {
   await connectDB();
   await seedUsers();

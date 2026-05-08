@@ -9,6 +9,7 @@ const { validateRequiredFields } = require('../utils/validators');
 const router = Router();
 
 router.post('/batch', authMiddleware, roleGuard('petani'), async (req, res) => {
+  console.log('[FARMER] POST /batch received');
   try {
     const required = ['lokasi_gps', 'luas_area_ha', 'riwayat_pupuk_pestisida', 'tanggal_tanam', 'varietas_benih', 'sumber_benih', 'pestisida', 'tanggal_panen', 'volume_gkg_kg', 'hasil_panen_per_ha'];
     validateRequiredFields(req.body, required);

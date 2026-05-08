@@ -273,6 +273,15 @@ async function initFabricGateway() {
   console.log(`[FABRIC] Connected to channel "${CHANNEL}", chaincode "${CHAINCODE_NAME}"`);
 }
 
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+    ),
+  ]);
+}
+
 async function submitTransaction(fnName, ...args) {
   if (MOCK_MODE) {
     return mockSubmitTransaction(fnName, ...args);
@@ -282,10 +291,28 @@ async function submitTransaction(fnName, ...args) {
     throw new Error('Fabric Gateway not initialized');
   }
 
-  const result = await contract.submitTransaction(fnName, ...args);
-  const resultStr = new TextDecoder().decode(result);
-  console.log(`[FABRIC] submitTransaction ${fnName}: ${resultStr}`);
-  return resultStr ? JSON.parse(resultStr) : {};
+  console.log(`[FABRIC] submitTransaction START ${fnName}`);
+  try {
+    const result = await withTimeout(
+      contract.submitTransaction(fnName, ...args),
+      30000,
+      `submitTransaction(${fnName})`
+    );
+    const resultStr = new TextDecoder().decode(result);
+    console.log(`[FABRIC] submitTransaction SUCCESS ${fnName}: ${resultStr}`);
+    return resultStr ? JSON.parse(resultStr) : {};
+  } catch (err) {
+    console.error(`[FABRIC] submitTransaction ERROR ${fnName}: ${err.message}`);
+    console.error(`[FABRIC]   code: ${err.code}`);
+    console.error(`[FABRIC]   metadata: ${JSON.stringify(err.metadata?.getMap?.() || 'none')}`);
+    if (err.errors) {
+      for (const [i, e] of err.errors.entries()) {
+        console.error(`[FABRIC]   error[${i}]: ${e.message}`);
+      }
+    }
+    console.error(`[FABRIC]   full: ${JSON.stringify(err, Object.getOwnPropertyNames(err))}`);
+    throw err;
+  }
 }
 
 async function evaluateTransaction(fnName, ...args) {

@@ -9,6 +9,7 @@ services:
     environment:
       - FABRIC_LOGGING_SPEC=INFO
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_ADVERTISEADDRESS=orderer.example.com:7050
       - ORDERER_GENERAL_LISTENPORT=7050
       - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
       - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
@@ -93,8 +94,8 @@ services:
       dockerfile: network/Dockerfile.chaincode
     environment:
       - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
-      - CORE_CHAINCODE_ID_NAME=${CHAINCODE_PKG_ID:-riceTraceability:1.0}
-    command: ["--chaincode-address", "0.0.0.0:9999", "--chaincode-id", "${CHAINCODE_PKG_ID:-riceTraceability:1.0}"]
+      - CORE_CHAINCODE_ID_NAME=${CHAINCODE_PKG_ID:-riceTraceability:5073cc6ffba898296bf685a2f29b39f56aee95d34c87383813be785cf98a63c6}
+    command: ["--chaincode-address", "0.0.0.0:9999", "--chaincode-id", "${CHAINCODE_PKG_ID:-riceTraceability:5073cc6ffba898296bf685a2f29b39f56aee95d34c87383813be785cf98a63c6}"]
     depends_on:
       - peer0.org1.example.com
     networks:
@@ -153,10 +154,14 @@ services:
       - DATABASE_DATABASE=fabricexplorer
       - DATABASE_USERNAME=hppoc
       - DATABASE_PASSWD=password
-      - LOG_LEVEL_APP=info
+      - LOG_LEVEL_APP=debug
+      - LOG_LEVEL_DB=debug
+      - LOG_LEVEL_CONSOLE=debug
+      - DISCOVERY_AS_LOCALHOST=false
     volumes:
       - ../explorer/config.json:/opt/explorer/app/platform/fabric/config.json
       - ../explorer/connection-profile:/opt/explorer/app/platform/fabric/connection-profile
+      - ../explorer/patches/FabricGateway.js:/opt/explorer/app/platform/fabric/gateway/FabricGateway.js
       - ./organizations:/opt/explorer/app/platform/fabric/crypto
     ports:
       - "8080:8080"
