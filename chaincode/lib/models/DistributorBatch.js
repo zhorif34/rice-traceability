@@ -7,6 +7,7 @@ class DistributorBatch {
     this.volume_beras_dikirim_karung = data.volume_beras_dikirim_karung;
     this.tujuan_pengiriman = data.tujuan_pengiriman;
     this.tanggal_pengiriman = data.tanggal_pengiriman;
+    this.berat_beras_diterima = data.berat_beras_diterima;
   }
 }
 

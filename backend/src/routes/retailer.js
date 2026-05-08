@@ -12,7 +12,7 @@ const router = Router();
 router.post('/batch', authMiddleware, roleGuard('retailer'), async (req, res) => {
   try {
     const required = [
-      'prev_batch_id', 'nomor_invoice', 'volume_dibeli_karung', 'tanggal_terima',
+      'prev_batch_id', 'nomor_invoice', 'volume_dibeli_karung', 'berat_beras_dibeli', 'tanggal_terima',
       'nomor_batch_beras', 'harga_eceran', 'tanggal_penjualan',
       'keterangan_berat_bersih', 'logo_halal', 'keterangan_nama_alamat_produsen', 'tanggal_kadaluarsa',
     ];

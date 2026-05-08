@@ -209,8 +209,7 @@ describe('RiceTraceabilityContract - Mass Balance Validation', () => {
         );
         expect.fail('Should have thrown');
       } catch (err) {
-        expect(err.message).to.include('Volume exceeds available remaining stock');
-        expect(err.message).to.include('Available: 0');
+        expect(err.message).to.include('FULLY_CONSUMED');
       }
     });
 
@@ -375,6 +374,175 @@ describe('RiceTraceabilityContract - Mass Balance Validation', () => {
       const result = await contract.createFarmerBatch(ctx, 'FARMER_01', farmerData());
       const parsed = JSON.parse(result);
       expect(parsed.creator_id).to.equal('');
+    });
+  });
+
+  describe('Batch Status', () => {
+    it('should create farmer batch with status OPEN', async () => {
+      const ctx = createMockCtx();
+      const result = await contract.createFarmerBatch(ctx, 'FARMER_01', farmerData());
+      const parsed = JSON.parse(result);
+      expect(parsed.status).to.equal('OPEN');
+    });
+
+    it('should set parent status to PARTIALLY_CONSUMED after partial consumption', async () => {
+      const ctx = createMockCtx();
+      await contract.createFarmerBatch(ctx, 'FARMER_01', farmerData({ volume_gkg_kg: 1000 }));
+
+      await contract.createCollectorBatch(
+        ctx, 'COLLECTOR_01', collectorData('FARMER_01', { volume_gkg_diterima_kg: 500 })
+      );
+
+      const parent = JSON.parse(ctx._store.get('FARMER_01'));
+      expect(parent.status).to.equal('PARTIALLY_CONSUMED');
+      expect(parent.available_volume).to.equal(500);
+    });
+
+    it('should set parent status to FULLY_CONSUMED when available_volume reaches 0', async () => {
+      const ctx = createMockCtx();
+      await contract.createFarmerBatch(ctx, 'FARMER_01', farmerData({ volume_gkg_kg: 1000 }));
+
+      await contract.createCollectorBatch(
+        ctx, 'COLLECTOR_01', collectorData('FARMER_01', { volume_gkg_diterima_kg: 1000 })
+      );
+
+      const parent = JSON.parse(ctx._store.get('FARMER_01'));
+      expect(parent.status).to.equal('FULLY_CONSUMED');
+      expect(parent.available_volume).to.equal(0);
+    });
+
+    it('should allow different entity types to consume from same batch (split-volume)', async () => {
+      const ctx = createMockCtx();
+      await contract.createFarmerBatch(ctx, 'FARMER_01', farmerData({ volume_gkg_kg: 1000, creator_id: 'user-farmer' }));
+
+      await contract.createCollectorBatch(
+        ctx, 'COLLECTOR_01', collectorData('FARMER_01', { volume_gkg_diterima_kg: 500, creator_id: 'user-collector-a' })
+      );
+
+      const result = await contract.createCollectorBatch(
+        ctx, 'COLLECTOR_02', collectorData('FARMER_01', { volume_gkg_diterima_kg: 500, creator_id: 'user-collector-b' })
+      );
+      const parsed = JSON.parse(result);
+      expect(parsed.initial_volume).to.equal(500);
+
+      const parent = JSON.parse(ctx._store.get('FARMER_01'));
+      expect(parent.status).to.equal('FULLY_CONSUMED');
+    });
+  });
+
+  describe('lockBatch / unlockBatch', () => {
+    it('should allow batch owner to lock their batch', async () => {
+      const ctx = createMockCtx();
+      await contract.createFarmerBatch(ctx, 'FARMER_01', farmerData({ creator_id: 'user-farmer' }));
+
+      const result = await contract.lockBatch(ctx, 'FARMER_01', 'user-farmer');
+      const parsed = JSON.parse(result);
+      expect(parsed.status).to.equal('LOCKED');
+    });
+
+    it('should reject lock by non-owner', async () => {
+      const ctx = createMockCtx();
+      await contract.createFarmerBatch(ctx, 'FARMER_01', farmerData({ creator_id: 'user-farmer' }));
+
+      try {
+        await contract.lockBatch(ctx, 'FARMER_01', 'user-other');
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.include('Only the batch owner can lock it');
+      }
+    });
+
+    it('should reject consuming a LOCKED batch', async () => {
+      const ctx = createMockCtx();
+      await contract.createFarmerBatch(ctx, 'FARMER_01', farmerData({ volume_gkg_kg: 1000, creator_id: 'user-farmer' }));
+      await contract.lockBatch(ctx, 'FARMER_01', 'user-farmer');
+
+      try {
+        await contract.createCollectorBatch(
+          ctx, 'COLLECTOR_01', collectorData('FARMER_01', { volume_gkg_diterima_kg: 500 })
+        );
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.include('LOCKED');
+      }
+    });
+
+    it('should allow batch owner to unlock their batch', async () => {
+      const ctx = createMockCtx();
+      await contract.createFarmerBatch(ctx, 'FARMER_01', farmerData({ volume_gkg_kg: 1000, creator_id: 'user-farmer' }));
+      await contract.lockBatch(ctx, 'FARMER_01', 'user-farmer');
+
+      const result = await contract.unlockBatch(ctx, 'FARMER_01', 'user-farmer');
+      const parsed = JSON.parse(result);
+      expect(parsed.status).to.equal('OPEN');
+    });
+
+    it('should set status to FULLY_CONSUMED when unlocking a fully consumed batch', async () => {
+      const ctx = createMockCtx();
+      await contract.createFarmerBatch(ctx, 'FARMER_01', farmerData({ volume_gkg_kg: 1000, creator_id: 'user-farmer' }));
+
+      await contract.createCollectorBatch(
+        ctx, 'COLLECTOR_01', collectorData('FARMER_01', { volume_gkg_diterima_kg: 500 })
+      );
+
+      const parentBefore = JSON.parse(ctx._store.get('FARMER_01'));
+      expect(parentBefore.status).to.equal('PARTIALLY_CONSUMED');
+
+      await contract.lockBatch(ctx, 'FARMER_01', 'user-farmer');
+      const locked = JSON.parse(ctx._store.get('FARMER_01'));
+      expect(locked.status).to.equal('LOCKED');
+
+      await contract.unlockBatch(ctx, 'FARMER_01', 'user-farmer');
+      const unlocked = JSON.parse(ctx._store.get('FARMER_01'));
+      expect(unlocked.status).to.equal('OPEN');
+      expect(unlocked.available_volume).to.equal(500);
+    });
+
+    it('should reject locking a FULLY_CONSUMED batch', async () => {
+      const ctx = createMockCtx();
+      await contract.createFarmerBatch(ctx, 'FARMER_01', farmerData({ volume_gkg_kg: 1000, creator_id: 'user-farmer' }));
+
+      await contract.createCollectorBatch(
+        ctx, 'COLLECTOR_01', collectorData('FARMER_01', { volume_gkg_diterima_kg: 1000 })
+      );
+
+      try {
+        await contract.lockBatch(ctx, 'FARMER_01', 'user-farmer');
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.include('FULLY_CONSUMED');
+      }
+    });
+
+    it('should reject locking an already LOCKED batch', async () => {
+      const ctx = createMockCtx();
+      await contract.createFarmerBatch(ctx, 'FARMER_01', farmerData({ creator_id: 'user-farmer' }));
+      await contract.lockBatch(ctx, 'FARMER_01', 'user-farmer');
+
+      try {
+        await contract.lockBatch(ctx, 'FARMER_01', 'user-farmer');
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.include('already LOCKED');
+      }
+    });
+
+    it('should reject consuming a FULLY_CONSUMED batch', async () => {
+      const ctx = createMockCtx();
+      await contract.createFarmerBatch(ctx, 'FARMER_01', farmerData({ volume_gkg_kg: 1000 }));
+
+      await contract.createCollectorBatch(
+        ctx, 'COLLECTOR_01', collectorData('FARMER_01', { volume_gkg_diterima_kg: 1000 })
+      );
+
+      try {
+        await contract.createCollectorBatch(
+          ctx, 'COLLECTOR_02', collectorData('FARMER_01', { volume_gkg_diterima_kg: 1 })
+        );
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.include('FULLY_CONSUMED');
+      }
     });
   });
 });

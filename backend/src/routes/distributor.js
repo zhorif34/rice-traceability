@@ -11,7 +11,7 @@ const router = Router();
 
 router.post('/batch', authMiddleware, roleGuard('distributor'), async (req, res) => {
   try {
-    const required = ['prev_batch_id', 'nomor_po', 'volume_beras_dikirim_karung', 'tujuan_pengiriman', 'tanggal_pengiriman'];
+    const required = ['prev_batch_id', 'nomor_po', 'volume_beras_dikirim_karung', 'berat_beras_diterima', 'tujuan_pengiriman', 'tanggal_pengiriman'];
     validateRequiredFields(req.body, required);
 
     const batchId = `DISTRIBUTOR_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;

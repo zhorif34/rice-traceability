@@ -13,7 +13,7 @@ import { useBatchHistory } from "@/hooks/useBatchHistory";
 
 const RetailerDashboard = () => {
   const [prevBatchId, setPrevBatchId] = useState("");
-  const [purchase, setPurchase] = useState({ invoice: "", volume: "", dateRecv: "", batchNo: "", price: "", dateSale: "" });
+  const [purchase, setPurchase] = useState({ invoice: "", volume: "", beratBerasDibeli: "", dateRecv: "", batchNo: "", price: "", dateSale: "" });
   const [checklist, setChecklist] = useState({ netWeight: false, halal: false, name: false, address: false, expiry: false });
   const [loading, setLoading] = useState(false);
   const { batches, refresh } = useBatchHistory();
@@ -23,11 +23,12 @@ const RetailerDashboard = () => {
     if (!Object.values(checklist).every(Boolean)) { toast.error("Lengkapi semua checklist."); return; }
     setLoading(true);
     try {
-      const res = await api.post("/retailer/batch", {
-        prev_batch_id: prevBatchId, nomor_invoice: purchase.invoice,
-        volume_dibeli_karung: purchase.volume, tanggal_terima: purchase.dateRecv,
-        nomor_batch_beras: purchase.batchNo, harga_eceran: purchase.price,
-        tanggal_penjualan: purchase.dateSale, keterangan_berat_bersih: String(checklist.netWeight),
+       const res = await api.post("/retailer/batch", {
+         prev_batch_id: prevBatchId, nomor_invoice: purchase.invoice,
+         volume_dibeli_karung: purchase.volume, berat_beras_dibeli: purchase.beratBerasDibeli,
+         tanggal_terima: purchase.dateRecv, nomor_batch_beras: purchase.batchNo,
+         harga_eceran: purchase.price, tanggal_penjualan: purchase.dateSale,
+         keterangan_berat_bersih: String(checklist.netWeight),
         logo_halal: String(checklist.halal), keterangan_nama_alamat_produsen: String(checklist.name),
         tanggal_kadaluarsa: new Date(Date.now() + 365*24*60*60*1000).toISOString().split('T')[0],
       });
@@ -48,7 +49,8 @@ const RetailerDashboard = () => {
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><ShoppingBag className="w-5 h-5 text-primary" />Data Pembelian & Penjualan</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2"><Label>Nomor Invoice</Label><Input value={purchase.invoice} onChange={e => setPurchase({ ...purchase, invoice: e.target.value })} required /></div>
-            <div className="space-y-2"><Label>Volume Dibeli (karung)</Label><Input type="number" value={purchase.volume} onChange={e => setPurchase({ ...purchase, volume: e.target.value })} required /></div>
+             <div className="space-y-2"><Label>Volume Dibeli (karung)</Label><Input type="number" value={purchase.volume} onChange={e => setPurchase({ ...purchase, volume: e.target.value })} required /></div>
+             <div className="space-y-2"><Label>Berat Beras Dibeli (kg)</Label><Input type="number" step="0.01" value={purchase.beratBerasDibeli} onChange={e => setPurchase({ ...purchase, beratBerasDibeli: e.target.value })} required /></div>
             <div className="space-y-2"><Label>Tanggal Diterima</Label><Input type="date" value={purchase.dateRecv} onChange={e => setPurchase({ ...purchase, dateRecv: e.target.value })} required /></div>
             <div className="space-y-2"><Label>Nomor Batch Beras</Label><Input value={purchase.batchNo} onChange={e => setPurchase({ ...purchase, batchNo: e.target.value })} required /></div>
             <div className="space-y-2"><Label>Harga Eceran (Rp/kg)</Label><Input type="number" value={purchase.price} onChange={e => setPurchase({ ...purchase, price: e.target.value })} required /></div>

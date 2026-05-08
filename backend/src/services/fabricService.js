@@ -29,6 +29,13 @@ let contract = null;
 
 const mockStore = new Map();
 
+const BATCH_STATUS = {
+  OPEN: 'OPEN',
+  PARTIALLY_CONSUMED: 'PARTIALLY_CONSUMED',
+  FULLY_CONSUMED: 'FULLY_CONSUMED',
+  LOCKED: 'LOCKED',
+};
+
 const ENTITY_ORDER = {
   petani: 0,
   pengepul: 1,
@@ -64,28 +71,48 @@ const VOLUME_FIELDS = {
   retailer: 'volume_dibeli_karung',
 };
 
-function getConsumersOfPrevBatch(prevBatchId) {
-  const consumers = [];
-  for (const batch of mockStore.values()) {
-    if (batch.data && batch.data.prev_batch_id === prevBatchId) {
-      consumers.push(batch);
-    }
+function computeBatchStatus(batch) {
+  if (batch.status === BATCH_STATUS.LOCKED) {
+    return BATCH_STATUS.LOCKED;
   }
-  return consumers;
+  const available = parseFloat(batch.available_volume);
+  const initial = parseFloat(batch.initial_volume);
+  if (available <= 0) {
+    return BATCH_STATUS.FULLY_CONSUMED;
+  }
+  if (available < initial) {
+    return BATCH_STATUS.PARTIALLY_CONSUMED;
+  }
+  return BATCH_STATUS.OPEN;
 }
 
-function checkJumpBlock(prevBatchId, currentEntityType) {
-  const consumers = getConsumersOfPrevBatch(prevBatchId);
-  const currentOrder = ENTITY_ORDER[currentEntityType];
-
-  for (const consumer of consumers) {
-    const consumerOrder = ENTITY_ORDER[consumer.entityType];
-    if (consumerOrder > currentOrder) {
-      return consumer.entityType;
-    }
+function checkBatchConsumable(prevBatchId, currentEntityType) {
+  const parentBatch = mockStore.get(prevBatchId);
+  if (!parentBatch) {
+    throw new Error(`Previous batch ${prevBatchId} does not exist`);
   }
 
-  return null;
+  const status = computeBatchStatus(parentBatch);
+
+  if (status === BATCH_STATUS.LOCKED) {
+    throw new Error(
+      `Batch ${prevBatchId} is LOCKED by its owner and cannot be consumed by anyone.`
+    );
+  }
+
+  if (status === BATCH_STATUS.FULLY_CONSUMED) {
+    throw new Error(
+      `Batch ${prevBatchId} is FULLY_CONSUMED. No volume available.`
+    );
+  }
+
+  const allowedPrevTypes = ALLOWED_PREV[currentEntityType];
+  if (!allowedPrevTypes || !allowedPrevTypes.includes(parentBatch.entityType)) {
+    const allowed = allowedPrevTypes ? allowedPrevTypes.join(' atau ') : 'tidak ada';
+    throw new Error(
+      `Batch ${currentEntityType} harus terhubung dengan batch ${allowed}. Ditemukan: ${parentBatch.entityType}`
+    );
+  }
 }
 
 function mockSubmitTransaction(fnName, ...args) {
@@ -102,6 +129,10 @@ function mockSubmitTransaction(fnName, ...args) {
       return mockCreateBatch(args[0], 'bulog', args[1]);
     case 'createRetailerBatch':
       return mockCreateBatch(args[0], 'retailer', args[1]);
+    case 'lockBatch':
+      return mockLockBatch(args[0], args[1]);
+    case 'unlockBatch':
+      return mockUnlockBatch(args[0], args[1]);
     default:
       throw new Error(`Unknown function: ${fnName}`);
   }
@@ -126,13 +157,7 @@ function mockCreateBatch(batchId, entityType, dataJson, validateSNI) {
       throw new Error(`Batch ${entityType} harus terhubung dengan batch ${allowed}. Ditemukan: ${prevBatch.entityType}`);
     }
 
-    const blockedBy = checkJumpBlock(data.prev_batch_id, entityType);
-    if (blockedBy) {
-      throw new Error(
-        `Batch ID ${data.prev_batch_id} sudah digunakan oleh entitas ${blockedBy} yang lebih tinggi. ` +
-        `Entitas ${entityType} tidak dapat menggunakan batch ini karena sudah dilewati (melompat).`
-      );
-    }
+    checkBatchConsumable(data.prev_batch_id, entityType);
   } else if (allowedPrevTypes) {
     throw new Error(`Batch ${entityType} wajib memiliki prev_batch_id dari ${allowedPrevTypes.join(' atau ')}`);
   }
@@ -161,6 +186,12 @@ function mockCreateBatch(batchId, entityType, dataJson, validateSNI) {
 
     parentBatch.available_volume = available - receivedVolume;
     parentBatch.updatedAt = new Date().toISOString();
+
+    if (parentBatch.available_volume <= 0) {
+      parentBatch.status = BATCH_STATUS.FULLY_CONSUMED;
+    } else {
+      parentBatch.status = BATCH_STATUS.PARTIALLY_CONSUMED;
+    }
   }
 
   if (validateSNI) {
@@ -193,6 +224,7 @@ function mockCreateBatch(batchId, entityType, dataJson, validateSNI) {
     creator_id: data.creator_id || '',
     initial_volume: receivedVolume,
     available_volume: receivedVolume,
+    status: BATCH_STATUS.OPEN,
     data,
     ...(validateSNI ? { sniValid: true } : {}),
     createdAt: new Date().toISOString(),
@@ -201,6 +233,62 @@ function mockCreateBatch(batchId, entityType, dataJson, validateSNI) {
 
   mockStore.set(batchId, batch);
   console.log(`[MOCK] Batch created: ${batchId} (${entityType})`);
+  return batch;
+}
+
+function mockLockBatch(batchId, callerId) {
+  const batch = mockStore.get(batchId);
+  if (!batch) {
+    throw new Error(`Batch ${batchId} does not exist`);
+  }
+
+  if (batch.creator_id !== callerId) {
+    throw new Error(
+      `Only the batch owner can lock it. Caller ${callerId} is not the owner of batch ${batchId}`
+    );
+  }
+
+  if (batch.status === BATCH_STATUS.FULLY_CONSUMED) {
+    throw new Error(`Cannot lock batch ${batchId}: already FULLY_CONSUMED`);
+  }
+
+  if (batch.status === BATCH_STATUS.LOCKED) {
+    throw new Error(`Batch ${batchId} is already LOCKED`);
+  }
+
+  batch.status = BATCH_STATUS.LOCKED;
+  batch.updatedAt = new Date().toISOString();
+
+  mockStore.set(batchId, batch);
+  return batch;
+}
+
+function mockUnlockBatch(batchId, callerId) {
+  const batch = mockStore.get(batchId);
+  if (!batch) {
+    throw new Error(`Batch ${batchId} does not exist`);
+  }
+
+  if (batch.creator_id !== callerId) {
+    throw new Error(
+      `Only the batch owner can unlock it. Caller ${callerId} is not the owner of batch ${batchId}`
+    );
+  }
+
+  if (batch.status !== BATCH_STATUS.LOCKED) {
+    throw new Error(`Batch ${batchId} is not LOCKED (current status: ${batch.status})`);
+  }
+
+  const available = parseFloat(batch.available_volume);
+  if (available <= 0) {
+    batch.status = BATCH_STATUS.FULLY_CONSUMED;
+  } else {
+    batch.status = BATCH_STATUS.OPEN;
+  }
+
+  batch.updatedAt = new Date().toISOString();
+
+  mockStore.set(batchId, batch);
   return batch;
 }
 

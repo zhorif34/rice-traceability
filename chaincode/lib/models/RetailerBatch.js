@@ -5,6 +5,7 @@ class RetailerBatch {
     this.prev_batch_id = data.prev_batch_id;
     this.nomor_invoice = data.nomor_invoice;
     this.volume_dibeli_karung = data.volume_dibeli_karung;
+    this.berat_beras_dibeli = data.berat_beras_dibeli;
     this.tanggal_terima = data.tanggal_terima;
     this.nomor_batch_beras = data.nomor_batch_beras;
     this.harga_eceran = data.harga_eceran;

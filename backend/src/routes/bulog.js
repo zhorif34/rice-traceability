@@ -12,9 +12,9 @@ const router = Router();
 router.post('/batch', authMiddleware, roleGuard('bulog'), async (req, res) => {
   try {
     const required = [
-      'prev_batch_id', 'nomor_po', 'volume_dibeli_ton',
+      'prev_batch_id', 'nomor_po', 'volume_dibeli_kg',
       'mutu_beras_sni', 'nomor_gudang_penerimaan', 'tanggal_pembelian',
-      'nomor_so', 'volume_dijual_ton', 'penerima', 'tanggal_pengiriman_gudang',
+      'nomor_so', 'volume_dijual_kg', 'penerima', 'tanggal_pengiriman_gudang',
     ];
     validateRequiredFields(req.body, required);
 
