@@ -28,6 +28,7 @@ let network = null;
 let contract = null;
 
 const mockStore = new Map();
+const mockReportStore = new Map();
 
 const BATCH_STATUS = {
   OPEN: 'OPEN',
@@ -66,9 +67,9 @@ const VOLUME_FIELDS = {
   petani: 'volume_gkg_kg',
   pengepul: 'volume_gkg_diterima_kg',
   rmu: 'volume_gkg_masuk_kg',
-  distributor: 'volume_beras_dikirim_karung',
-  bulog: 'volume_dibeli_ton',
-  retailer: 'volume_dibeli_karung',
+  distributor: 'volume_beras_dikirim_kg',
+  bulog: 'volume_dibeli_kg',
+  retailer: 'berat_beras_dibeli',
 };
 
 function computeBatchStatus(batch) {
@@ -115,6 +116,20 @@ function checkBatchConsumable(prevBatchId, currentEntityType) {
   }
 }
 
+function normalizeErrorMessage(msg) {
+  if (!msg) return msg;
+  if (/prev(?:ious)?\s+batch\s+\S+\s+(?:does not exist|not found)/i.test(msg)) {
+    return 'Batch ID tidak ditemukan';
+  }
+  if (/Invalid received volume/i.test(msg)) {
+    return 'Volume harus berupa angka positif';
+  }
+  if (/Volume exceeds available remaining stock/i.test(msg)) {
+    return msg.replace(/Volume exceeds available remaining stock\.?\s*Requested:\s*\S*,\s*Available:\s*\S*\s*in batch\s+(\S+)/i, 'Volume melebihi ketersediaan batch $1');
+  }
+  return msg;
+}
+
 function mockSubmitTransaction(fnName, ...args) {
   switch (fnName) {
     case 'createFarmerBatch':
@@ -133,6 +148,10 @@ function mockSubmitTransaction(fnName, ...args) {
       return mockLockBatch(args[0], args[1]);
     case 'unlockBatch':
       return mockUnlockBatch(args[0], args[1]);
+    case 'createReport':
+      return mockCreateReport(args[0], args[1]);
+    case 'updateReportStatus':
+      return mockUpdateReportStatus(args[0], args[1], args[2]);
     default:
       throw new Error(`Unknown function: ${fnName}`);
   }
@@ -165,6 +184,13 @@ function mockCreateBatch(batchId, entityType, dataJson, validateSNI) {
   const volumeField = VOLUME_FIELDS[entityType];
   const receivedVolume = parseFloat(data[volumeField]);
 
+  if (entityType === 'bulog' && data.volume_dijual_kg) {
+    const salesVolume = parseFloat(data.volume_dijual_kg);
+    if (salesVolume > receivedVolume) {
+      throw new Error('Volume dijual tidak boleh melebihi volume dibeli');
+    }
+  }
+
   if (isNaN(receivedVolume) || receivedVolume <= 0) {
     throw new Error(`Invalid ${volumeField}: must be a positive number`);
   }
@@ -178,10 +204,7 @@ function mockCreateBatch(batchId, entityType, dataJson, validateSNI) {
 
     const available = parseFloat(parentBatch.available_volume);
     if (receivedVolume > available) {
-      throw new Error(
-        `Volume exceeds available remaining stock. ` +
-        `Requested: ${receivedVolume}, Available: ${available} in batch ${data.prev_batch_id}`
-      );
+      throw new Error(`Volume melebihi ketersediaan batch ${data.prev_batch_id}`);
     }
 
     parentBatch.available_volume = available - receivedVolume;
@@ -292,6 +315,52 @@ function mockUnlockBatch(batchId, callerId) {
   return batch;
 }
 
+const REPORT_STATUSES = ['Pending', 'Diverifikasi', 'Investigasi', 'Selesai'];
+
+function mockCreateReport(reportId, dataJson) {
+  if (mockReportStore.has(reportId)) {
+    throw new Error(`Report ${reportId} already exists`);
+  }
+  const data = JSON.parse(dataJson);
+  const report = {
+    reportId,
+    batchId: data.batchId || '',
+    pelapor: data.pelapor || '',
+    email: data.email || '',
+    entitas: data.entitas || '',
+    jenis: data.jenis || '',
+    status: data.status || 'Pending',
+    prioritas: data.prioritas || 'Sedang',
+    lokasi: data.lokasi || '',
+    tanggal: data.tanggal || '',
+    deskripsi: data.deskripsi || '',
+    creator_id: data.creator_id || '',
+    verified: data.verified || false,
+    suspect: data.suspect || '',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  mockReportStore.set(reportId, report);
+  console.log(`[MOCK] Report created: ${reportId}`);
+  return report;
+}
+
+function mockUpdateReportStatus(reportId, status, updatedBy) {
+  const report = mockReportStore.get(reportId);
+  if (!report) {
+    throw new Error(`Report ${reportId} does not exist`);
+  }
+  if (!REPORT_STATUSES.includes(status)) {
+    throw new Error(`Invalid status: ${status}. Must be one of: ${REPORT_STATUSES.join(', ')}`);
+  }
+  report.status = status;
+  report.updatedAt = new Date().toISOString();
+  report.verified = status === 'Selesai' || status === 'Diverifikasi';
+  report.updatedBy = updatedBy || '';
+  mockReportStore.set(reportId, report);
+  return report;
+}
+
 function mockEvaluateTransaction(fnName, ...args) {
   switch (fnName) {
     case 'getBatch': {
@@ -322,6 +391,43 @@ function mockEvaluateTransaction(fnName, ...args) {
       for (const batch of mockStore.values()) {
         if (batch.creator_id === args[0]) results.push(batch);
       }
+      return results;
+    }
+    case 'getReport': {
+      const report = mockReportStore.get(args[0]);
+      if (!report) throw new Error(`Report ${args[0]} does not exist`);
+      return report;
+    }
+    case 'getAllReports': {
+      const reports = [];
+      for (const report of mockReportStore.values()) {
+        reports.push(report);
+      }
+      reports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      return reports;
+    }
+    case 'getReportsByPelapor': {
+      const results = [];
+      for (const report of mockReportStore.values()) {
+        if (report.pelapor === args[0]) results.push(report);
+      }
+      results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      return results;
+    }
+    case 'getReportsByCreator': {
+      const results = [];
+      for (const report of mockReportStore.values()) {
+        if (report.creator_id === args[0]) results.push(report);
+      }
+      results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      return results;
+    }
+    case 'getReportsByEntity': {
+      const results = [];
+      for (const report of mockReportStore.values()) {
+        if (report.entitas === args[0]) results.push(report);
+      }
+      results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       return results;
     }
     default:
@@ -372,7 +478,11 @@ function withTimeout(promise, ms, label) {
 
 async function submitTransaction(fnName, ...args) {
   if (MOCK_MODE) {
-    return mockSubmitTransaction(fnName, ...args);
+    try {
+      return mockSubmitTransaction(fnName, ...args);
+    } catch (err) {
+      throw new Error(normalizeErrorMessage(err.message));
+    }
   }
 
   if (!contract) {
@@ -393,13 +503,20 @@ async function submitTransaction(fnName, ...args) {
     console.error(`[FABRIC] submitTransaction ERROR ${fnName}: ${err.message}`);
     console.error(`[FABRIC]   code: ${err.code}`);
     console.error(`[FABRIC]   metadata: ${JSON.stringify(err.metadata?.getMap?.() || 'none')}`);
-    if (err.errors) {
-      for (const [i, e] of err.errors.entries()) {
-        console.error(`[FABRIC]   error[${i}]: ${e.message}`);
+    if (err.details) {
+      for (const [i, d] of err.details.entries()) {
+        console.error(`[FABRIC]   detail[${i}]: ${d.message} (${d.address})`);
       }
     }
     console.error(`[FABRIC]   full: ${JSON.stringify(err, Object.getOwnPropertyNames(err))}`);
-    throw err;
+
+    let actualError = err.message;
+    if (err.details && err.details.length > 0) {
+      actualError = err.details[0].message;
+    } else if (/^chaincode response \d+,\s*/i.test(actualError)) {
+      actualError = actualError.replace(/^chaincode response \d+,\s*/i, '');
+    }
+    throw new Error(normalizeErrorMessage(actualError));
   }
 }
 

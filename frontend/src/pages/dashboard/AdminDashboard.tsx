@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Eye, Sprout, Truck, Factory, Building2, Warehouse, ShoppingBag, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Search, Eye, Sprout, Truck, Factory, Building2, Warehouse, ShoppingBag, CheckCircle2, ShieldCheck, AlertTriangle, ExternalLink } from "lucide-react";
 import api from "@/services/api";
 
 const entityLabels: Record<string, string> = { petani: "Petani", pengepul: "Pengepul", rmu: "RMU", distributor: "Distributor", bulog: "Bulog", retailer: "Pengecer" };
@@ -39,6 +39,24 @@ const AdminDashboard = () => {
           <Card><CardContent className="pt-6"><div className="text-2xl font-bold">{new Set(batches.map(b => b.entityType)).size}</div><p className="text-sm text-muted-foreground">Entitas Aktif</p></CardContent></Card>
           <Card><CardContent className="pt-6"><div className="text-2xl font-bold">{batches.filter(b => b.sniValid).length}</div><p className="text-sm text-muted-foreground">SNI Valid</p></CardContent></Card>
         </div>
+        <Card className="border-destructive/20 bg-gradient-to-r from-destructive/5 to-background cursor-pointer hover:shadow-md transition" onClick={() => window.location.href = "/dashboard/admin/aduan"}>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-destructive" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Manajemen Aduan Seluruh Entitas</h3>
+                  <p className="text-sm text-muted-foreground">Pantau dan kelola aduan dari Petani, Pengepul, RMU, Distributor, BULOG, Retailer, dan Konsumen</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" className="shrink-0" asChild>
+                <a href="/dashboard/admin/aduan"><ExternalLink className="w-4 h-4 mr-1" /> Buka</a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-primary" />Daftar Batch</CardTitle>
           <div className="relative mt-2"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input placeholder="Cari Batch ID..." className="pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} /></div>
         </CardHeader>

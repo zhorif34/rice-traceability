@@ -171,9 +171,8 @@ describe('RiceTraceabilityContract - Mass Balance Validation', () => {
         );
         expect.fail('Should have thrown');
       } catch (err) {
-        expect(err.message).to.include('Volume exceeds available remaining stock');
-        expect(err.message).to.include('Requested: 600');
-        expect(err.message).to.include('Available: 500');
+        expect(err.message).to.include('Volume melebihi ketersediaan batch');
+        expect(err.message).to.include('FARMER_01');
       }
     });
 
@@ -260,7 +259,7 @@ describe('RiceTraceabilityContract - Mass Balance Validation', () => {
         );
         expect.fail('Should have thrown');
       } catch (err) {
-        expect(err.message).to.include('Volume exceeds available remaining stock');
+        expect(err.message).to.include('Volume melebihi ketersediaan batch');
       }
     });
   });

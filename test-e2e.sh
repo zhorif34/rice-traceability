@@ -53,7 +53,7 @@ echo "=== Step 4: Distributor creates batch ==="
 DIST_BRES=$(curl -s -X POST $API/distributor/batch \
   -H "Authorization: Bearer $DIST_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\"prev_batch_id\":\"$RMU_BATCH\",\"nomor_po\":\"PO-2025-001\",\"volume_beras_dikirim_karung\":\"200\",\"tujuan_pengiriman\":\"bulog\",\"tanggal_pengiriman\":\"2025-05-15\"}")
+  -d "{\"prev_batch_id\":\"$RMU_BATCH\",\"nomor_po\":\"PO-2025-001\",\"volume_beras_dikirim_kg\":\"2000\",\"berat_beras_diterima\":\"2000\",\"tujuan_pengiriman\":\"bulog\",\"tanggal_pengiriman\":\"2025-05-15\"}")
 echo "$DIST_BRES" | python3 -m json.tool
 DIST_BATCH=$(echo $DIST_BRES | python3 -c "import sys,json;print(json.load(sys.stdin)['batchId'])")
 echo "Distributor Batch ID: $DIST_BATCH"
@@ -63,7 +63,7 @@ echo "=== Step 5: Bulog creates batch ==="
 BULOG_BRES=$(curl -s -X POST $API/bulog/batch \
   -H "Authorization: Bearer $BULOG_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\"prev_batch_id\":\"$DIST_BATCH\",\"nomor_po\":\"PO-BULOG-001\",\"volume_dibeli_ton\":\"5\",\"harga_satuan_rp_per_kg\":\"12000\",\"mutu_beras_sni\":\"Medium\",\"nomor_gudang_penerimaan\":\"GDG-001\",\"tanggal_pembelian\":\"2025-05-16\",\"nomor_so\":\"SO-BULOG-001\",\"volume_dijual_ton\":\"3\",\"penerima\":\"Toko Beras Sehat\",\"tanggal_pengiriman_gudang\":\"2025-05-18\"}")
+  -d "{\"prev_batch_id\":\"$DIST_BATCH\",\"nomor_po\":\"PO-BULOG-001\",\"volume_dibeli_kg\":\"1500\",\"harga_satuan_rp_per_kg\":\"12000\",\"mutu_beras_sni\":\"Medium\",\"nomor_gudang_penerimaan\":\"GDG-001\",\"tanggal_pembelian\":\"2025-05-16\",\"nomor_so\":\"SO-BULOG-001\",\"volume_dijual_kg\":\"500\",\"penerima\":\"Toko Beras Sehat\",\"tanggal_pengiriman_gudang\":\"2025-05-18\"}")
 echo "$BULOG_BRES" | python3 -m json.tool
 BULOG_BATCH=$(echo $BULOG_BRES | python3 -c "import sys,json;print(json.load(sys.stdin)['batchId'])")
 echo "Bulog Batch ID: $BULOG_BATCH"

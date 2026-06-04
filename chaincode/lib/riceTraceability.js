@@ -34,7 +34,7 @@ const VOLUME_FIELDS = {
   petani: 'volume_gkg_kg',
   pengepul: 'volume_gkg_diterima_kg',
   rmu: 'volume_gkg_masuk_kg',
-  distributor: 'volume_beras_dikirim_karung',
+  distributor: 'volume_beras_dikirim_kg',
   bulog: 'volume_dibeli_kg',
   retailer: 'berat_beras_dibeli',
 };
@@ -130,14 +130,11 @@ class RiceTraceabilityContract extends Contract {
     const available = parseFloat(prevBatch.available_volume);
 
     if (isNaN(received) || received <= 0) {
-      throw new Error(`Invalid received volume: ${receivedVolume}. Must be a positive number.`);
+      throw new Error(`Volume ${receivedVolume} bukan angka positif yang valid`);
     }
 
     if (received > available) {
-      throw new Error(
-        `Volume exceeds available remaining stock. ` +
-        `Requested: ${received}, Available: ${available} in batch ${prevBatchId}`
-      );
+      throw new Error(`Volume melebihi ketersediaan batch ${prevBatchId}`);
     }
 
     prevBatch.available_volume = available - received;
@@ -274,7 +271,7 @@ class RiceTraceabilityContract extends Contract {
       throw new Error(`Berat Beras Diterima (${beratBerasDiterima} kg) melebihi Berat Beras Digiling RMU (${beratBerasDigiling} kg)`);
     }
 
-    const receivedVolume = parseFloat(data.volume_beras_dikirim_karung);
+    const receivedVolume = parseFloat(data.volume_beras_dikirim_kg);
     await this._validateAndDeductVolume(ctx, data.prev_batch_id, receivedVolume);
 
     const batch = {
@@ -298,6 +295,10 @@ class RiceTraceabilityContract extends Contract {
     await this._validatePrevBatch(ctx, data.prev_batch_id, 'bulog');
 
     const receivedVolume = parseFloat(data.volume_dibeli_kg);
+    const salesVolume = parseFloat(data.volume_dijual_kg);
+    if (salesVolume > receivedVolume) {
+      throw new Error('Volume dijual tidak boleh melebihi volume dibeli');
+    }
     await this._validateAndDeductVolume(ctx, data.prev_batch_id, receivedVolume);
 
     const batch = {
@@ -456,6 +457,124 @@ class RiceTraceabilityContract extends Contract {
     }
 
     return JSON.stringify(results);
+  }
+
+  // ─── Report / Complaint Functions ────────────────────────────────────────────
+
+  async createReport(ctx, reportId, dataJson) {
+    const existing = await ctx.stub.getState(reportId);
+    if (existing.length > 0) {
+      throw new Error(`Report ${reportId} already exists`);
+    }
+
+    const data = JSON.parse(dataJson);
+    const report = {
+      reportId,
+      batchId: data.batchId || '',
+      pelapor: data.pelapor || '',
+      email: data.email || '',
+      entitas: data.entitas || '',
+      jenis: data.jenis || '',
+      status: data.status || 'Pending',
+      prioritas: data.prioritas || 'Sedang',
+      lokasi: data.lokasi || '',
+      tanggal: data.tanggal || '',
+      deskripsi: data.deskripsi || '',
+      creator_id: data.creator_id || '',
+      verified: data.verified || false,
+      suspect: data.suspect || '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await ctx.stub.putState(reportId, Buffer.from(stringify(sortKeysRecursive(report))));
+    return JSON.stringify(report);
+  }
+
+  async getReport(ctx, reportId) {
+    const data = await ctx.stub.getState(reportId);
+    if (data.length === 0) {
+      throw new Error(`Report ${reportId} does not exist`);
+    }
+    return data.toString();
+  }
+
+  async getAllReports(ctx) {
+    const queryString = JSON.stringify({
+      selector: { reportId: { $exists: true } },
+    });
+    const iterator = await ctx.stub.getQueryResult(queryString);
+    const results = [];
+    let result = await iterator.next();
+    while (!result.done) {
+      results.push(JSON.parse(result.value.value.toString()));
+      result = await iterator.next();
+    }
+    results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return JSON.stringify(results);
+  }
+
+  async getReportsByPelapor(ctx, pelapor) {
+    const queryString = JSON.stringify({
+      selector: { pelapor },
+    });
+    const iterator = await ctx.stub.getQueryResult(queryString);
+    const results = [];
+    let result = await iterator.next();
+    while (!result.done) {
+      results.push(JSON.parse(result.value.value.toString()));
+      result = await iterator.next();
+    }
+    results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return JSON.stringify(results);
+  }
+
+  async getReportsByCreator(ctx, creatorId) {
+    const queryString = JSON.stringify({
+      selector: { creator_id: creatorId },
+    });
+    const iterator = await ctx.stub.getQueryResult(queryString);
+    const results = [];
+    let result = await iterator.next();
+    while (!result.done) {
+      results.push(JSON.parse(result.value.value.toString()));
+      result = await iterator.next();
+    }
+    results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return JSON.stringify(results);
+  }
+
+  async getReportsByEntity(ctx, entityType) {
+    const queryString = JSON.stringify({
+      selector: { entitas: entityType },
+    });
+    const iterator = await ctx.stub.getQueryResult(queryString);
+    const results = [];
+    let result = await iterator.next();
+    while (!result.done) {
+      results.push(JSON.parse(result.value.value.toString()));
+      result = await iterator.next();
+    }
+    results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return JSON.stringify(results);
+  }
+
+  async updateReportStatus(ctx, reportId, status, updatedBy) {
+    const data = await ctx.stub.getState(reportId);
+    if (data.length === 0) {
+      throw new Error(`Report ${reportId} does not exist`);
+    }
+    const report = JSON.parse(data.toString());
+    const validStatuses = ['Pending', 'Diverifikasi', 'Investigasi', 'Selesai'];
+    if (!validStatuses.includes(status)) {
+      throw new Error(`Invalid status: ${status}. Must be one of: ${validStatuses.join(', ')}`);
+    }
+    report.status = status;
+    report.updatedAt = new Date().toISOString();
+    report.verified = status === 'Selesai' || status === 'Diverifikasi';
+    report.updatedBy = updatedBy || '';
+    await ctx.stub.putState(reportId, Buffer.from(stringify(sortKeysRecursive(report))));
+    return JSON.stringify(report);
   }
 }
 

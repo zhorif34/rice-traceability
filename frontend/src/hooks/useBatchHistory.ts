@@ -21,12 +21,12 @@ function mapBatch(raw: any): BatchEntry {
         ? `${data.asal_petani_lokasi || ""} • ${data.volume_gkg_diterima_kg} kg`
         : data.volume_gkg_masuk_kg
           ? `GKG ${data.volume_gkg_masuk_kg} kg • ${data.berat_beras_digiling || "-"} kg digiling`
-          : data.volume_beras_dikirim_karung
-            ? `${data.volume_beras_dikirim_karung} karung`
-            : data.volume_dibeli_ton
-              ? `${data.volume_dibeli_ton} ton`
-              : data.volume_dibeli_karung
-                ? `${data.volume_dibeli_karung} karung`
+          : data.volume_beras_dikirim_kg
+            ? `${data.volume_beras_dikirim_kg} kg`
+            : data.volume_dibeli_kg
+              ? `${data.volume_dibeli_kg} kg`
+              : data.berat_beras_dibeli
+                ? `${data.berat_beras_dibeli} kg`
                 : raw.batchId,
     details: data,
     createdBy: raw.creator_id || "",

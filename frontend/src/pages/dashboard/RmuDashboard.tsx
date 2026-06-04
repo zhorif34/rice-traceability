@@ -48,7 +48,7 @@ const RmuDashboard = () => {
         <Card><CardHeader><CardTitle>Batch ID dari Petani/Pengepul</CardTitle></CardHeader><CardContent><div className="space-y-2"><Label>ID Batch (Petani atau Pengepul)</Label><Input placeholder="cth. FARMER_... atau COLLECTOR_..." value={prevBatchId} onChange={e => setPrevBatchId(e.target.value)} required /></div></CardContent></Card>
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><Factory className="w-5 h-5 text-primary" />Data Penerimaan</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Volume GKG Masuk (kg)</Label><Input type="number" value={recv.gkg} onChange={e => setRecv({ ...recv, gkg: e.target.value })} required /></div>
+            <div className="space-y-2"><Label>Volume GKP Masuk (kg)</Label><Input type="number" value={recv.gkg} onChange={e => setRecv({ ...recv, gkg: e.target.value })} required /></div>
             <div className="space-y-2"><Label>Nomor Batch Pengepul</Label><Input placeholder="Opsional jika dari Petani langsung" value={recv.batch} onChange={e => setRecv({ ...recv, batch: e.target.value })} /></div>
             <div className="space-y-2"><Label>Kadar Air Masuk (%)</Label><Input type="number" step="0.1" value={recv.moisture} onChange={e => setRecv({ ...recv, moisture: e.target.value })} required /></div>
             <div className="space-y-2"><Label>Inspeksi Visual</Label><Input value={recv.visual} onChange={e => setRecv({ ...recv, visual: e.target.value })} required /></div>
@@ -65,7 +65,7 @@ const RmuDashboard = () => {
             <div className="space-y-2"><Label>Sertifikat Mutu SNI</Label><Input value={pack.sniCert} onChange={e => setPack({ ...pack, sniCert: e.target.value })} required /></div>
           </CardContent>
         </Card>
-        <Card><CardHeader><CardTitle className="flex items-center gap-2"><Factory className="w-5 h-5 text-primary" />Berat Beras Digiling</CardTitle><CardDescription>Berat beras hasil penggilingan. Tidak boleh melebihi Volume GKG Masuk.</CardDescription></CardHeader>
+        <Card><CardHeader><CardTitle className="flex items-center gap-2"><Factory className="w-5 h-5 text-primary" />Berat Beras Digiling</CardTitle><CardDescription>Berat beras hasil penggilingan. Tidak boleh melebihi Volume GKP Masuk.</CardDescription></CardHeader>
           <CardContent><div className="space-y-2"><Label>Berat Beras Digiling (kg)</Label><Input type="number" step="0.1" placeholder="cth. 450.5" value={beratBerasDigiling} onChange={e => setBeratBerasDigiling(e.target.value)} required /></div></CardContent>
         </Card>
         <Card className="border-primary/30"><CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-primary" />Standar Kualitas SNI</CardTitle>

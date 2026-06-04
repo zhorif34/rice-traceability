@@ -1,6 +1,22 @@
 Saya Akan membuat sistem traceability beras berbasis blockchain dimulai
 dari tahap produksi di tingkat entitas petani.
 
+
+LATAR BELAKANG:
+
+Kompleksitas Rantai Pasok: Rantai pasok padi melibatkan multi-aktor mulai dari petani, pengepul, penggilingan (RMU), pengecer, hingga konsumen, sehingga membutuhkan koordinasi komprehensif untuk menjaga kualitas dan kuantitas produk 
+Tantangan Distribusi Konvensional: Rantai pasok agribisnis yang panjang memicu masalah stabilitas harga, penurunan kualitas, dan kesulitan verifikasi hak akibat model transaksi offline dengan penyimpanan data yang tersebar
+
+Urgensi Sistem Traceability: Sistem pelacakan terpadu berfungsi secara teknis untuk memonitor siklus komoditas dari fase panen hingga penjualan guna memastikan jaminan mutu dan keamanan pangan bagi konsumen 
+
+Keterbatasan Sistem Web2 (Konvensional): Sistem pelacakan terdahulu yang bergantung pada web terpusat (seperti MySQL/PHP) terbukti rentan terhadap akses ilegal, manipulasi data tidak sah, dan risiko kegagalan server
+
+Kesenjangan Implementasi Blockchain Sebelumnya: Studi blockchain pada rantai pasok beras saat ini masih berfokus pada aspek makro, memiliki antarmuka (UI) yang menyulitkan aktor skala kecil, dan belum terintegrasi dengan regulasi kualitas produk nasional
+
+Solusi dan Desain Penelitian: Penelitian ini merancang model traceability berbasis blockchain yang dieksekusi langsung dari tingkat petani, mengusung antarmuka sederhana berbasis kode QR dinamis, dan terkalibrasi langsung dengan standar mutu SNI 6128:2020 untuk menjamin integritas data serta daya saing ekspor.
+
+
+PROSES KERJA:
 Pada tahap awal, web akan menampilkan halaman login. Pengguna akan
 membuat akun dengan mendaftarkkan email dan password serta memilih
 entitas mereka. Entitas tersebut adalah petani, pengepul, RMU (Rice
@@ -144,4 +160,31 @@ Data yang dimasukkan ke Blockchain:
     Berat bersih, logo halal, keterangan nama dan alamat produsen,
     tanggal kadaluarsa pada pengisian data Retailer.
 
-PERUBAHAN SISTEM: Sistem sebelumnya sudah baik. Urutan yang seharusnya: Petani ke Pengepul ke RMU Ke Distributor Ke Bulog Ke Retailer. Namun,  sekarang ada perubahan sistem, Batch ID yang dihasilkan oleh petani dapat digunakan pada entitas pengepul dan RMU. selain itu, Batch ID yang dihasilkan oleh RMU dapat digunakan oleh Distributor, Bulog, dan Retailer. Batch ID dari ditributor dapat digunakan oleh Retailer. Jika Batch ID digunakan secara "melompat" contoh dari batch ID petani digunakan oleh RMU maka Batch ID dari Petani tidak bisa digunakan oleh Pengepul, sehingga pengepul tidak bisa memasukkan data. Hal tersebut juga berlaku untuk selanjutnya, contoh Batch ID dari RMU digunakan oleh Bulog, maka batch ID dari RMU tidak bisa digunakan oleh Distributor, Jika Batch ID dari RMU digunakan oleh Retailer maka Batch ID dari RMu tidak bisa digunakan oleh Distributor dan Bulog. Jika Batch ID dari distributor digunakan retailer maka Batch ID dari distributor tidak bisa digunakan oleh Bulog. Sebagai tambahan, sekarang Konsumen hanya dapat membeli beras dari Distributor, Bulog, dan Retailer. Konsumen tetap bisa melakukan traceability dari entitas petani hingga entitas yang mereka lakukan pembelian beras. Jika Konsumen membeli beras dari Distributor dan Bulog, maka konsumen harus melakukan input batch ID secara manual. Jika konsumen membeli batch ID dari retailer maka konsumen dapat melakukan scan Batch ID untuk memperoleh data traceability.
+PERUBAHAN SISTEM: Sistem sebelumnya sudah baik. Urutan yang seharusnya: Petani ke Pengepul ke RMU Ke Distributor Ke Bulog Ke Retailer. Namun,  sekarang ada perubahan sistem, Batch ID yang dihasilkan oleh petani dapat digunakan pada entitas pengepul dan RMU. selain itu, Batch ID yang dihasilkan oleh RMU dapat digunakan oleh Distributor, Bulog, dan Retailer. Batch ID dari ditributor dapat digunakan oleh Retailer.Sebagai tambahan, sekarang Konsumen hanya dapat membeli beras dari Distributor, Bulog, dan Retailer. Konsumen tetap bisa melakukan traceability dari entitas petani hingga entitas yang mereka lakukan pembelian beras. Jika Konsumen membeli beras dari Distributor dan Bulog, maka konsumen harus melakukan input batch ID secara manual. Jika konsumen membeli batch ID dari retailer maka konsumen dapat melakukan scan Batch ID untuk memperoleh data traceability.
+
+Terdapat agoritma atau aturan pada batch, yaitu Pelacakan & Pengurangan Volume (validateAndDeductVolume):
+Ketika batch turunan (downstream batch) dibuat, volumenya akan dikurangi dari available_volume milik batch induk.
+Tidak dapat membuat batch dengan permintaan volume yang melebihi volume tersedia pada batch induk.
+Hal ini mencegah terjadinya “penggunaan ganda” (double-spending) volume dalam rantai pasok.
+
+
+Terdapat sistem pelaporan aduan pada aplikasi traceability beras berbasis blockchain dirancang sebagai fitur untuk melaporkan kejanggalan atau permasalahan yang ditemukan pada produk beras selama proses distribusi. Fitur ini dapat diakses melalui tombol “Laporkan Kejanggalan Beras” yang tersedia pada dashboard utama pengguna. Ketika pengguna melakukan pelaporan, sistem akan menampilkan formulir aduan yang terdiri dari beberapa data dan informasi penting, yaitu ID Aduan, Nama Pelapor, Entitas Pelapor, Email Pelapor, Batch ID Bermasalah, Jenis Aduan, Lokasi Kejadian, Tanggal Pelaporan, dan Deskripsi Aduan. Batch ID bermasalah digunakan untuk menghubungkan laporan dengan data traceability beras yang tersimpan pada blockchain sehingga riwayat distribusi produk dapat ditelusuri secara akurat. Setelah formulir diisi dan dikirimkan, data aduan akan diproses oleh sistem dan disimpan sebagai bagian dari data pelaporan. Selanjutnya, laporan yang dikirim oleh pengguna akan terhubung secara otomatis dengan dashboard admin pada menu “Manajemen Aduan Seluruh Entitas”.
+
+Architecture Summary — Ambapari Rice Traceability
+Tech Stack
+Layer	Technology
+Blockchain	Hyperledger Fabric 2.5 
+Chaincode	Node.js (fabric-contract-api), 
+Backend	Express.js + Node 18
+Frontend	React + Vite + TailwindCSS + TypeScript, port 3000
+Database	PostgreSQL 16 (for user auth & activity logs only)
+Ledger DB	CouchDB (for rich queries on chaincode state)
+
+Data Flow
+User (Browser) → React Frontend
+    ↓ REST API (JWT Bearer)
+Express Backend 
+    ↓ Fabric Gateway (gRPC + TLS)
+Peer → Chaincode Server 
+    ↓ State writes to
+CouchDB — immutable ledger

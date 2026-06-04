@@ -41,7 +41,7 @@ const CollectorDashboard = () => {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2"><Label>ID Batch dari Petani</Label><Input placeholder="cth. FARMER_..." value={form.prevBatchId} onChange={e => setForm({ ...form, prevBatchId: e.target.value })} required /></div>
             <div className="space-y-2"><Label>Nomor Pengiriman</Label><Input placeholder="cth. COL-001" value={form.consignmentNo} onChange={e => setForm({ ...form, consignmentNo: e.target.value })} required /></div>
-            <div className="space-y-2"><Label>Volume GKG Diterima (kg)</Label><Input type="number" value={form.gkgVolume} onChange={e => setForm({ ...form, gkgVolume: e.target.value })} required /></div>
+            <div className="space-y-2"><Label>Volume GKP Diterima (kg)</Label><Input type="number" value={form.gkgVolume} onChange={e => setForm({ ...form, gkgVolume: e.target.value })} required /></div>
             <div className="space-y-2"><Label>Asal / Lokasi Petani</Label><Input value={form.farmerOrigin} onChange={e => setForm({ ...form, farmerOrigin: e.target.value })} required /></div>
             <div className="space-y-2"><Label>Tanggal Pengiriman</Label><Input type="date" value={form.dispatchDate} onChange={e => setForm({ ...form, dispatchDate: e.target.value })} required /></div>
           </CardContent>

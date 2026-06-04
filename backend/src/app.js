@@ -14,6 +14,8 @@ const retailerRoutes = require('./routes/retailer');
 const traceabilityRoutes = require('./routes/traceability');
 const adminRoutes = require('./routes/admin');
 const myBatchesRoutes = require('./routes/myBatches');
+const reportRoutes = require('./routes/report');
+const reportPublicRoutes = require('./routes/reportPublic');
 const { connectDB } = require('./config/database');
 const { initFabricGateway } = require('./services/fabricService');
 const { seedUsers } = require('./seeders/seedUsers');
@@ -34,6 +36,8 @@ app.use('/api/retailer', retailerRoutes);
 app.use('/api/traceability', traceabilityRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/my-batches', myBatchesRoutes);
+app.use('/api/report', reportRoutes);
+app.use('/api/report-public', reportPublicRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

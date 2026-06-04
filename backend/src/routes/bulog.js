@@ -18,12 +18,22 @@ router.post('/batch', authMiddleware, roleGuard('bulog'), async (req, res) => {
     ];
     validateRequiredFields(req.body, required);
 
+    const salesVolume = parseFloat(req.body.volume_dijual_kg);
+    const purchaseVolume = parseFloat(req.body.volume_dibeli_kg);
+    if (salesVolume > purchaseVolume) {
+      return res.status(400).json({ error: 'Volume dijual tidak boleh melebihi volume dibeli' });
+    }
+
     const batchId = `BULOG_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
     const result = await submitTransaction('createBulogBatch', batchId, JSON.stringify({ ...req.body, creator_id: req.user.userId }));
     const qrCode = await generateQRCode(batchId);
     res.status(201).json({ batchId, qrCode, ...result });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    let message = err.message;
+    if (/^Volume (?:melebihi ketersediaan batch|exceeds available remaining stock)/i.test(message) || /Invalid received volume/i.test(message)) {
+      message = 'volume dibeli melebihi volume yang dikirim Bulog/RMU';
+    }
+    res.status(400).json({ error: message });
   }
 });
 

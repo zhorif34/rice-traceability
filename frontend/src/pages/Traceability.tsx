@@ -102,9 +102,16 @@ const Traceability = () => {
                             <span className="text-xs text-muted-foreground">{step.createdAt ? new Date(step.createdAt).toLocaleDateString('id-ID') : ''}</span>
                           </div>
                           <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                            {step.data && Object.entries(step.data).filter(([k]) => k !== 'prev_batch_id').map(([key, val]: [string, any]) => (
-                              <div key={key} className="text-sm"><span className="text-muted-foreground">{key.replace(/_/g, ' ')}: </span><span className="font-medium text-foreground">{String(val)}</span></div>
-                            ))}
+                            {step.data && Object.entries(step.data).filter(([k]) => k !== 'prev_batch_id').map(([key, val]: [string, any]) => {
+                              const kgFields = new Set(['volume_gkg_kg', 'hasil_panen_per_ha', 'volume_gkg_diterima_kg', 'berat_netto', 'berat_beras_digiling', 'volume_gkg_masuk_kg', 'berat_beras_diterima', 'volume_beras_dikirim_kg', 'volume_dijual_kg', 'volume_dibeli_kg', 'berat_beras_dibeli']);
+                              const pctFields = new Set(['butir_kepala', 'butir_menir', 'butir_patah', 'derajat_sosoh', 'kadar_air', 'kadar_air_masuk']);
+                              let suffix = '';
+                              if (kgFields.has(key)) suffix = ' kg';
+                              else if (pctFields.has(key)) suffix = ' %';
+                              return (
+                                <div key={key} className="text-sm"><span className="text-muted-foreground">{key.replace(/_/g, ' ')}: </span><span className="font-medium text-foreground">{String(val)}{suffix}</span></div>
+                              );
+                            })}
                           </div>
                         </div>
                       </div>

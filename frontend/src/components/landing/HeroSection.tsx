@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Search, UserPlus } from "lucide-react";
+import { Search, UserPlus, AlertTriangle } from "lucide-react";
 
 const HeroSection = () => (
   <section className="relative min-h-[90vh] flex items-center overflow-hidden">
@@ -25,6 +25,7 @@ const HeroSection = () => (
         <div className="flex flex-wrap gap-4">
           <Button variant="hero" size="lg" className="bg-green-600 text-white hover:bg-green-700" asChild><Link to="/traceability"><Search className="w-5 h-5" />Telusuri Beras</Link></Button>
           <Button variant="heroOutline" size="lg" className="border-white text-white hover:bg-white hover:text-foreground" asChild><Link to="/register"><UserPlus className="w-5 h-5" />Gabung Jaringan</Link></Button>
+          <Button variant="hero" size="lg" className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/25" asChild><Link to="/aduan-konsumen"><AlertTriangle className="w-5 h-5" />Ajukan Aduan</Link></Button>
         </div>
       </div>
     </div>

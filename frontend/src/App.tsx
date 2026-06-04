@@ -13,6 +13,9 @@ import DistributorDashboard from "./pages/dashboard/DistributorDashboard.tsx";
 import BulogDashboard from "./pages/dashboard/BulogDashboard.tsx";
 import RetailerDashboard from "./pages/dashboard/RetailerDashboard.tsx";
 import AdminDashboard from "./pages/dashboard/AdminDashboard.tsx";
+import ReportCenter from "./pages/dashboard/ReportCenter.tsx";
+import AdminReportCenter from "./pages/dashboard/AdminReportCenter.tsx";
+import ConsumerReport from "./pages/ConsumerReport.tsx";
 
 const App = () => (
   <TooltipProvider>
@@ -30,6 +33,9 @@ const App = () => (
         <Route path="/dashboard/bulog" element={<BulogDashboard />} />
         <Route path="/dashboard/retailer" element={<RetailerDashboard />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
+        <Route path="/dashboard/admin/aduan" element={<AdminReportCenter />} />
+        <Route path="/dashboard/aduan" element={<ReportCenter />} />
+        <Route path="/aduan-konsumen" element={<ConsumerReport />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

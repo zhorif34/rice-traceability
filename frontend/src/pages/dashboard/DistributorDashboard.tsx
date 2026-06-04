@@ -22,7 +22,7 @@ const DistributorDashboard = () => {
     try {
        const res = await api.post("/distributor/batch", {
          prev_batch_id: form.prevBatchId, nomor_po: form.poNumber,
-         volume_beras_dikirim_karung: form.riceVolume, berat_beras_diterima: form.beratBerasDiterima,
+         volume_beras_dikirim_kg: form.riceVolume, berat_beras_diterima: form.beratBerasDiterima,
          tujuan_pengiriman: form.destination, tanggal_pengiriman: form.dispatchDate,
        });
       const batchId = res.data.batchId;
@@ -43,7 +43,7 @@ const DistributorDashboard = () => {
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><Truck className="w-5 h-5 text-primary" />Data Pengiriman</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2"><Label>Nomor PO</Label><Input value={form.poNumber} onChange={e => setForm({ ...form, poNumber: e.target.value })} required /></div>
-             <div className="space-y-2"><Label>Volume Dikirim (karung)</Label><Input type="number" value={form.riceVolume} onChange={e => setForm({ ...form, riceVolume: e.target.value })} required /></div>
+             <div className="space-y-2"><Label>Volume Dikirim (kg)</Label><Input type="number" value={form.riceVolume} onChange={e => setForm({ ...form, riceVolume: e.target.value })} required /></div>
              <div className="space-y-2"><Label>Berat Beras Diterima (Kg)</Label><Input type="number" step="0.01" value={form.beratBerasDiterima} onChange={e => setForm({ ...form, beratBerasDiterima: e.target.value })} required /></div>
             <div className="space-y-2"><Label>Tujuan</Label><Select value={form.destination} onValueChange={v => setForm({ ...form, destination: v })}><SelectTrigger><SelectValue placeholder="Pilih tujuan" /></SelectTrigger><SelectContent><SelectItem value="bulog">Bulog</SelectItem><SelectItem value="retailer">Pengecer</SelectItem></SelectContent></Select></div>
             <div className="space-y-2"><Label>Tanggal Pengiriman</Label><Input type="date" value={form.dispatchDate} onChange={e => setForm({ ...form, dispatchDate: e.target.value })} required /></div>

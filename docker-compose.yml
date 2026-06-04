@@ -77,7 +77,7 @@ services:
       - ./frontend/postcss.config.js:/app/postcss.config.js
       - ./frontend/tsconfig.json:/app/tsconfig.json
     environment:
-      - VITE_API_URL=${VITE_API_URL:-http://localhost:5000/api}
+      - VITE_API_URL=${VITE_API_URL:-/api}
       - CHOKIDAR_USEPOLLING=true
     depends_on:
       - backend
@@ -125,7 +125,7 @@ services:
     volumes:
       - ./explorer/config.json:/opt/explorer/app/platform/fabric/config.json
       - ./explorer/connection-profile:/opt/explorer/app/platform/fabric/connection-profile
-      - ./organizations:/opt/explorer/app/platform/fabric/crypto
+      - ./network/organizations:/opt/explorer/app/platform/fabric/crypto
     environment:
       - DATABASE_HOST=explorer-db
       - DATABASE_DATABASE=fabricexplorer

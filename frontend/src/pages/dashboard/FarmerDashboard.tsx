@@ -62,7 +62,7 @@ const FarmerDashboard = () => {
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><Wheat className="w-5 h-5 text-primary" />Data Panen</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2"><Label>Tanggal Panen</Label><Input type="date" value={harvest.harvestDate} onChange={e => setHarvest({ ...harvest, harvestDate: e.target.value })} required /></div>
-            <div className="space-y-2"><Label>Volume GKG (kg)</Label><Input type="number" placeholder="cth. 5000" value={harvest.paddyVolume} onChange={e => setHarvest({ ...harvest, paddyVolume: e.target.value })} required /></div>
+            <div className="space-y-2"><Label>Volume GKP (kg)</Label><Input type="number" placeholder="cth. 5000" value={harvest.paddyVolume} onChange={e => setHarvest({ ...harvest, paddyVolume: e.target.value })} required /></div>
             <div className="space-y-2"><Label>Hasil per Ha (kg/ha)</Label><Input type="number" placeholder="cth. 6000" value={harvest.yieldPerHa} onChange={e => setHarvest({ ...harvest, yieldPerHa: e.target.value })} required /></div>
           </CardContent>
         </Card>
