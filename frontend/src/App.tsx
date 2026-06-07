@@ -15,6 +15,7 @@ import RetailerDashboard from "./pages/dashboard/RetailerDashboard.tsx";
 import AdminDashboard from "./pages/dashboard/AdminDashboard.tsx";
 import ReportCenter from "./pages/dashboard/ReportCenter.tsx";
 import AdminReportCenter from "./pages/dashboard/AdminReportCenter.tsx";
+import AdminUserData from "./pages/dashboard/AdminUserData.tsx";
 import ConsumerReport from "./pages/ConsumerReport.tsx";
 
 const App = () => (
@@ -34,6 +35,7 @@ const App = () => (
         <Route path="/dashboard/retailer" element={<RetailerDashboard />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
         <Route path="/dashboard/admin/aduan" element={<AdminReportCenter />} />
+        <Route path="/dashboard/admin/pengguna" element={<AdminUserData />} />
         <Route path="/dashboard/aduan" element={<ReportCenter />} />
         <Route path="/aduan-konsumen" element={<ConsumerReport />} />
         <Route path="*" element={<NotFound />} />

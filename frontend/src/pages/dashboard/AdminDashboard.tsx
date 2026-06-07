@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Eye, Sprout, Truck, Factory, Building2, Warehouse, ShoppingBag, CheckCircle2, ShieldCheck, AlertTriangle, ExternalLink } from "lucide-react";
+import { Search, Eye, Sprout, Truck, Factory, Building2, Warehouse, ShoppingBag, CheckCircle2, ShieldCheck, AlertTriangle, ExternalLink, Users } from "lucide-react";
 import api from "@/services/api";
 
 const entityLabels: Record<string, string> = { petani: "Petani", pengepul: "Pengepul", rmu: "RMU", distributor: "Distributor", bulog: "Bulog", retailer: "Pengecer" };
@@ -53,6 +53,24 @@ const AdminDashboard = () => {
               </div>
               <Button variant="outline" size="sm" className="shrink-0" asChild>
                 <a href="/dashboard/admin/aduan"><ExternalLink className="w-4 h-4 mr-1" /> Buka</a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-background cursor-pointer hover:shadow-md transition" onClick={() => window.location.href = "/dashboard/admin/pengguna"}>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Data Entitas Terdaftar</h3>
+                  <p className="text-sm text-muted-foreground">Lihat seluruh entitas yang terdaftar beserta batch ID yang dihasilkan</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" className="shrink-0" asChild>
+                <a href="/dashboard/admin/pengguna"><ExternalLink className="w-4 h-4 mr-1" /> Buka</a>
               </Button>
             </div>
           </CardContent>
