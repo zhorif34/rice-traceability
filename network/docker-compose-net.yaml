@@ -87,6 +87,59 @@ services:
     networks:
       - rice-network
 
+  couchdb1:
+    container_name: couchdb1
+    image: couchdb:3.3.3
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - "6984:5984"
+    networks:
+      - rice-network
+
+  peer0.org2.example.com:
+    container_name: peer0.org2.example.com
+    image: hyperledger/fabric-peer:2.5
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer0.org2.example.com
+      - CORE_PEER_ADDRESS=peer0.org2.example.com:7052
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.example.com:7052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org2.example.com:7052
+      - CORE_PEER_LOCALMSPID=Org2MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.org2.example.com:9445
+      - CORE_METRICS_PROVIDER=prometheus
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7053
+      - CORE_CHAINCODE_MODE=dev
+      - CORE_PEER_CHAINCODEDEV=true
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+    volumes:
+      - ./organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls:/etc/hyperledger/fabric/tls
+      - ./organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/signcerts/Admin@org2.example.com-cert.pem:/etc/hyperledger/fabric/msp/admincerts/Admin@org2.example.com-cert.pem
+      - ./core.yaml:/etc/hyperledger/fabric/core.yaml
+      - peer0.org2.example.com:/var/hyperledger/production
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 7052:7052
+    depends_on:
+      - couchdb1
+    networks:
+      - rice-network
+
   chaincode:
     container_name: riceTraceability_chaincode
     build:
@@ -94,8 +147,8 @@ services:
       dockerfile: network/Dockerfile.chaincode
     environment:
       - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
-      - CORE_CHAINCODE_ID_NAME=${CHAINCODE_PKG_ID:-riceTraceability:5073cc6ffba898296bf685a2f29b39f56aee95d34c87383813be785cf98a63c6}
-    command: ["--chaincode-address", "0.0.0.0:9999", "--chaincode-id", "${CHAINCODE_PKG_ID:-riceTraceability:5073cc6ffba898296bf685a2f29b39f56aee95d34c87383813be785cf98a63c6}"]
+      - CORE_CHAINCODE_ID_NAME=${CHAINCODE_PKG_ID:-riceTraceability:13d1283f3881a64c53f894c154c2b42ea7967fd1b6cf4c991da560203182c4c3}
+    command: ["--chaincode-address", "0.0.0.0:9999", "--chaincode-id", "${CHAINCODE_PKG_ID:-riceTraceability:13d1283f3881a64c53f894c154c2b42ea7967fd1b6cf4c991da560203182c4c3}"]
     depends_on:
       - peer0.org1.example.com
     networks:
@@ -178,4 +231,5 @@ networks:
 volumes:
   orderer.example.com:
   peer0.org1.example.com:
+  peer0.org2.example.com:
   explorerpgdata:

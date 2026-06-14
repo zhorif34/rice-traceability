@@ -19,6 +19,25 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+const ERROR_MAP: Record<string, string> = {
+  'FULLY_CONSUMED. No volume available': 'volume pada batch tersebut sudah tidak tersedia',
+};
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.data?.error) {
+      for (const [key, value] of Object.entries(ERROR_MAP)) {
+        if (error.response.data.error.includes(key)) {
+          error.response.data.error = value;
+          break;
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export interface ReportData {
   batchId: string;
   jenis: string;

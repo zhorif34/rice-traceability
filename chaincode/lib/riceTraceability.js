@@ -48,6 +48,12 @@ class RiceTraceabilityContract extends Contract {
     console.info('Rice Traceability chaincode initialized');
   }
 
+  _getTimestamp(ctx) {
+    const txTimestamp = ctx.stub.getTxTimestamp();
+    const date = new Date(txTimestamp.seconds * 1000 + Math.floor(txTimestamp.nanos / 1000000));
+    return date.toISOString();
+  }
+
   _computeBatchStatus(batch) {
     if (batch.status === BATCH_STATUS.LOCKED) {
       return BATCH_STATUS.LOCKED;
@@ -138,7 +144,7 @@ class RiceTraceabilityContract extends Contract {
     }
 
     prevBatch.available_volume = available - received;
-    prevBatch.updatedAt = new Date().toISOString();
+    prevBatch.updatedAt = this._getTimestamp(ctx);
 
     if (prevBatch.status === BATCH_STATUS.LOCKED) {
       prevBatch.status = BATCH_STATUS.PARTIALLY_CONSUMED;
@@ -162,7 +168,7 @@ class RiceTraceabilityContract extends Contract {
     const initialVolume = parseFloat(data.volume_gkg_kg);
 
     if (isNaN(initialVolume) || initialVolume <= 0) {
-      throw new Error('Invalid volume_gkg_kg: must be a positive number');
+      throw new Error('volume GKP tidak boleh 0');
     }
 
     const batch = {
@@ -173,8 +179,8 @@ class RiceTraceabilityContract extends Contract {
       available_volume: initialVolume,
       status: BATCH_STATUS.OPEN,
       data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: this._getTimestamp(ctx),
+      updatedAt: this._getTimestamp(ctx),
     };
 
     await ctx.stub.putState(batchId, Buffer.from(stringify(sortKeysRecursive(batch))));
@@ -196,8 +202,8 @@ class RiceTraceabilityContract extends Contract {
       available_volume: receivedVolume,
       status: BATCH_STATUS.OPEN,
       data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: this._getTimestamp(ctx),
+      updatedAt: this._getTimestamp(ctx),
     };
 
     await ctx.stub.putState(batchId, Buffer.from(stringify(sortKeysRecursive(batch))));
@@ -243,8 +249,8 @@ class RiceTraceabilityContract extends Contract {
       status: BATCH_STATUS.OPEN,
       data,
       sniValid: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: this._getTimestamp(ctx),
+      updatedAt: this._getTimestamp(ctx),
     };
 
     await ctx.stub.putState(batchId, Buffer.from(stringify(sortKeysRecursive(batch))));
@@ -282,8 +288,8 @@ class RiceTraceabilityContract extends Contract {
       available_volume: receivedVolume,
       status: BATCH_STATUS.OPEN,
       data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: this._getTimestamp(ctx),
+      updatedAt: this._getTimestamp(ctx),
     };
 
     await ctx.stub.putState(batchId, Buffer.from(stringify(sortKeysRecursive(batch))));
@@ -309,8 +315,8 @@ class RiceTraceabilityContract extends Contract {
       available_volume: receivedVolume,
       status: BATCH_STATUS.OPEN,
       data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: this._getTimestamp(ctx),
+      updatedAt: this._getTimestamp(ctx),
     };
 
     await ctx.stub.putState(batchId, Buffer.from(stringify(sortKeysRecursive(batch))));
@@ -332,8 +338,8 @@ class RiceTraceabilityContract extends Contract {
       available_volume: receivedVolume,
       status: BATCH_STATUS.OPEN,
       data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: this._getTimestamp(ctx),
+      updatedAt: this._getTimestamp(ctx),
     };
 
     await ctx.stub.putState(batchId, Buffer.from(stringify(sortKeysRecursive(batch))));
@@ -363,7 +369,7 @@ class RiceTraceabilityContract extends Contract {
     }
 
     batch.status = BATCH_STATUS.LOCKED;
-    batch.updatedAt = new Date().toISOString();
+    batch.updatedAt = this._getTimestamp(ctx);
 
     await ctx.stub.putState(batchId, Buffer.from(stringify(sortKeysRecursive(batch))));
     return JSON.stringify(batch);
@@ -394,7 +400,7 @@ class RiceTraceabilityContract extends Contract {
       batch.status = BATCH_STATUS.OPEN;
     }
 
-    batch.updatedAt = new Date().toISOString();
+    batch.updatedAt = this._getTimestamp(ctx);
 
     await ctx.stub.putState(batchId, Buffer.from(stringify(sortKeysRecursive(batch))));
     return JSON.stringify(batch);
@@ -476,15 +482,14 @@ class RiceTraceabilityContract extends Contract {
       entitas: data.entitas || '',
       jenis: data.jenis || '',
       status: data.status || 'Pending',
-      prioritas: data.prioritas || 'Sedang',
       lokasi: data.lokasi || '',
       tanggal: data.tanggal || '',
       deskripsi: data.deskripsi || '',
       creator_id: data.creator_id || '',
       verified: data.verified || false,
       suspect: data.suspect || '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: this._getTimestamp(ctx),
+      updatedAt: this._getTimestamp(ctx),
     };
 
     await ctx.stub.putState(reportId, Buffer.from(stringify(sortKeysRecursive(report))));
@@ -570,7 +575,7 @@ class RiceTraceabilityContract extends Contract {
       throw new Error(`Invalid status: ${status}. Must be one of: ${validStatuses.join(', ')}`);
     }
     report.status = status;
-    report.updatedAt = new Date().toISOString();
+    report.updatedAt = this._getTimestamp(ctx);
     report.verified = status === 'Selesai' || status === 'Diverifikasi';
     report.updatedBy = updatedBy || '';
     await ctx.stub.putState(reportId, Buffer.from(stringify(sortKeysRecursive(report))));

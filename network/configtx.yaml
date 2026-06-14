@@ -37,6 +37,27 @@ Organizations:
       - Host: peer0.org1.example.com
         Port: 7051
 
+  - &Org2
+    Name: Org2MSP
+    ID: Org2MSP
+    MSPDir: organizations/peerOrganizations/org2.example.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('Org2MSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('Org2MSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('Org2MSP.member')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('Org2MSP.member')"
+    AnchorPeers:
+      - Host: peer0.org2.example.com
+        Port: 7052
+
 Capabilities:
   Channel: &ChannelCapabilities
     V2_0: true
@@ -122,4 +143,5 @@ Profiles:
       <<: *ApplicationDefaults
       Organizations:
         - *Org1
+        - *Org2
       Capabilities: *ApplicationCapabilities

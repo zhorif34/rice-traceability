@@ -35,7 +35,7 @@ const FarmerDashboard = () => {
       setLand({ gps: "", area: "", fertHistory: "" });
       setPlanting({ sowDate: "", seedVariety: "", seedSource: "", pesticides: "" });
       setHarvest({ harvestDate: "", paddyVolume: "", yieldPerHa: "" });
-    } catch (err: any) { toast.error(err.response?.data?.error || "Gagal."); } finally { setLoading(false); }
+    } catch (err: any) { toast.error(err.response?.data?.error || "volume GKP tidak boleh 0"); } finally { setLoading(false); }
   };
 
   return (

@@ -18,6 +18,20 @@ services:
     networks:
       - app-network
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+
   backend:
     build:
       context: ./backend
@@ -34,7 +48,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev_secret_change_in_production}
       FABRIC_CHANNEL: mychannel
       FABRIC_CHAINCODE_NAME: riceTraceability
-      FABRIC_MOCK_MODE: ${FABRIC_MOCK_MODE:-false}
+      FABRIC_MOCK_MODE: false
       FABRIC_PEER_ENDPOINT: peer0.org1.example.com:7051
       FABRIC_PEER_HOST_ALIAS: peer0.org1.example.com
       FABRIC_PEER_TLS_CERT: /app/fabric/crypto/peer-tls-ca.crt
@@ -44,6 +58,12 @@ services:
       FABRIC_CERT: /app/fabric/crypto/admin-cert.pem
       FABRIC_KEY: /app/fabric/crypto/admin-key.pem
       FABRIC_MSP_ID: Org1MSP
+      FABRIC_ORG2_PEER_ENDPOINT: peer0.org2.example.com:7052
+      FABRIC_ORG2_PEER_HOST_ALIAS: peer0.org2.example.com
+      FABRIC_ORG2_PEER_TLS_CERT: /app/fabric/crypto/org2-peer-tls-ca.crt
+      FABRIC_ORG2_CERT: /app/fabric/crypto/org2-admin-cert.pem
+      FABRIC_ORG2_KEY: /app/fabric/crypto/org2-admin-key.pem
+      FABRIC_ORG2_MSP_ID: Org2MSP
     volumes:
       - ./backend/src/app.js:/app/src/app.js
       - ./backend/src/routes:/app/src/routes
@@ -54,6 +74,9 @@ services:
       - ./backend/src/utils:/app/src/utils
       - ./backend/src/seeders:/app/src/seeders
       - ./backend/fabric/crypto:/app/fabric/crypto
+      - ./network/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt:/app/fabric/crypto/org2-peer-tls-ca.crt
+      - ./network/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/signcerts/Admin@org2.example.com-cert.pem:/app/fabric/crypto/org2-admin-cert.pem
+      - ./network/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/keystore/priv_sk:/app/fabric/crypto/org2-admin-key.pem
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,0 +1,107 @@
+CODINGAN DATA PENGGUNA
+
+FILE: src/pages/dashboard/AdminDashboard.tsx
+
+1.  Import dan Tipe Data
+
+import { useEffect, useState } from “react”; import { Search, Eye, …,
+AlertTriangle, Users } from “lucide-react”; import type { BatchEntry }
+from “@/hooks/useBatchHistory”;
+
+type RegisteredUser = { name: string; email: string; entity: string;
+registeredAt: string; };
+
+2.  State dan Loader pada AdminDashboard
+
+const [users, setUsers] = useState<RegisteredUser[]>([]); const
+[userSearch, setUserSearch] = useState(““);
+
+useEffect(() => { const load = () => { try { const raw =
+localStorage.getItem(“ambapari_users”); setUsers(raw ? JSON.parse(raw) :
+[]); } catch { setUsers([]); } };
+
+load(); window.addEventListener(“storage”, load);
+
+return () => window.removeEventListener(“storage”, load); }, []);
+
+3.  Fungsi Mengambil Batch Pengguna
+
+const getUserBatches = (email: string): BatchEntry[] => { try { const
+raw = localStorage.getItem(ambapari_batches_${email}); return raw ?
+JSON.parse(raw) : []; } catch { return []; } };
+
+4.  Filter Pengguna
+
+const filteredUsers = users.filter( (u) =>
+u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+u.email.toLowerCase().includes(userSearch.toLowerCase()) ||
+(entityLabels[u.entity] ?? u.entity) .toLowerCase()
+.includes(userSearch.toLowerCase()) );
+
+5.  Kartu Baru: Data Entitas Terdaftar
+
+Data Entitas Terdaftar
+
+    <div className="relative mt-2">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+      <Input
+        placeholder="Cari nama, email, atau jenis entitas..."
+        className="pl-10"
+        value={userSearch}
+        onChange={(e) => setUserSearch(e.target.value)}
+      />
+    </div>
+
+Nama Lengkap / Perusahaan Email Jenis Entitas Batch ID Dihasilkan
+
+{filteredUsers.map((u) => { const userBatches = getUserBatches(u.email);
+
+    return (
+            <TableRow key={u.email}>
+              <TableCell className="font-medium">{u.name}</TableCell>
+
+              <TableCell className="text-sm text-muted-foreground">
+                {u.email}
+              </TableCell>
+
+              <TableCell>
+                <Badge variant="secondary" className={entityColors[u.entity]}>
+                  {entityLabels[u.entity] ?? u.entity}
+                </Badge>
+              </TableCell>
+
+              <TableCell>
+                {userBatches.length === 0 ? (
+                  <span className="text-xs text-muted-foreground">
+                    Belum ada
+                  </span>
+                ) : (
+                  <div className="flex flex-wrap gap-1">
+                    {userBatches.map((b) => (
+                      <Badge
+                        key={`${b.batchId}-${b.createdAt}`}
+                        variant="outline"
+                        className="font-mono text-xs"
+                      >
+                        {b.batchId}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </TableCell>
+            </TableRow>
+          );
+        })}
+
+        {filteredUsers.length === 0 && (
+          <TableRow>
+            <TableCell
+              colSpan={4}
+              className="text-center text-muted-foreground py-8"
+            >
+              Belum ada entitas yang terdaftar.
+            </TableCell>
+          </TableRow>
+        )}
+      </TableBody>
+    </Table>

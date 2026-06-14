@@ -38,8 +38,8 @@ const Report = sequelize.define('Report', {
     defaultValue: 'Pending',
   },
   prioritas: {
-    type: DataTypes.ENUM('Rendah', 'Sedang', 'Tinggi'),
-    defaultValue: 'Sedang',
+    type: DataTypes.STRING,
+    allowNull: true,
   },
   lokasi: {
     type: DataTypes.STRING,

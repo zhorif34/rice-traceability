@@ -10,7 +10,7 @@ const JWT_EXPIRES_IN = '24h';
 async function register(email, password, role, entityName) {
   const existing = await User.findOne({ where: { email } });
   if (existing) {
-    throw new Error('Email already registered');
+    throw new Error('Email sudah digunakan');
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -33,12 +33,12 @@ async function register(email, password, role, entityName) {
 async function login(email, password) {
   const user = await User.findOne({ where: { email } });
   if (!user) {
-    throw new Error('Invalid credentials');
+    throw new Error('email tidak terdaftar');
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    throw new Error('Invalid credentials');
+    throw new Error('password salah');
   }
 
   const token = jwt.sign(

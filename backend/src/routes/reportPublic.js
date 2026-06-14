@@ -23,7 +23,6 @@ router.post('/', async (req, res) => {
       entitas: entitas || 'Konsumen',
       jenis,
       status: 'Pending',
-      prioritas: 'Sedang',
       lokasi: lokasi || '',
       tanggal: tanggal || new Date().toISOString().split('T')[0],
       deskripsi,

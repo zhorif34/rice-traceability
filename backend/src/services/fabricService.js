@@ -192,7 +192,15 @@ function mockCreateBatch(batchId, entityType, dataJson, validateSNI) {
   }
 
   if (isNaN(receivedVolume) || receivedVolume <= 0) {
-    throw new Error(`Invalid ${volumeField}: must be a positive number`);
+    const friendlyName = {
+      volume_gkg_kg: 'volume GKP',
+      volume_gkg_diterima_kg: 'volume GKP diterima',
+      volume_gkg_masuk_kg: 'volume GKP masuk',
+      volume_beras_dikirim_kg: 'volume beras dikirim',
+      volume_dibeli_kg: 'volume dibeli',
+      berat_beras_dibeli: 'berat beras dibeli',
+    }[volumeField] || volumeField;
+    throw new Error(`${friendlyName} tidak boleh 0`);
   }
 
   if (data.prev_batch_id) {
@@ -330,7 +338,7 @@ function mockCreateReport(reportId, dataJson) {
     entitas: data.entitas || '',
     jenis: data.jenis || '',
     status: data.status || 'Pending',
-    prioritas: data.prioritas || 'Sedang',
+
     lokasi: data.lokasi || '',
     tanggal: data.tanggal || '',
     deskripsi: data.deskripsi || '',

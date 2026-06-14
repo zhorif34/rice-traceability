@@ -10,7 +10,7 @@ const router = Router();
 
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { batchId, jenis, entitas, nama, lokasi, tanggal, deskripsi, prioritas } = req.body;
+    const { batchId, jenis, entitas, nama, lokasi, tanggal, deskripsi } = req.body;
 
     if (!batchId || !jenis || !nama || !deskripsi) {
       return res.status(400).json({ error: 'Mohon lengkapi field wajib: batchId, jenis, nama, deskripsi' });
@@ -33,7 +33,6 @@ router.post('/', authMiddleware, async (req, res) => {
       entitas: entitasFinal,
       jenis,
       status: 'Pending',
-      prioritas: prioritas || 'Sedang',
       lokasi: lokasi || '',
       tanggal: tanggal || '',
       deskripsi,
@@ -56,6 +55,23 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
+async function mergePrioritas(fabricReports) {
+  if (!fabricReports || fabricReports.length === 0) return fabricReports;
+  const reportIds = fabricReports.map(r => r.reportId);
+  const dbRows = await Report.findAll({
+    attributes: ['reportId', 'prioritas'],
+    where: { reportId: reportIds },
+  });
+  const prioritasMap = {};
+  for (const row of dbRows) {
+    prioritasMap[row.reportId] = row.prioritas;
+  }
+  return fabricReports.map(r => ({
+    ...r,
+    prioritas: prioritasMap[r.reportId] || '',
+  }));
+}
+
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const { status: statusFilter, search } = req.query;
@@ -63,10 +79,10 @@ router.get('/', authMiddleware, async (req, res) => {
 
     if (req.user.role === 'admin') {
       const fabricReports = await evaluateTransaction('getAllReports');
-      reports = fabricReports;
+      reports = await mergePrioritas(fabricReports);
     } else {
       const fabricReports = await evaluateTransaction('getReportsByCreator', req.user.userId);
-      reports = fabricReports;
+      reports = await mergePrioritas(fabricReports);
     }
 
     let filtered = reports;
@@ -90,7 +106,8 @@ router.get('/', authMiddleware, async (req, res) => {
 
 router.get('/stats', authMiddleware, roleGuard('admin'), async (req, res) => {
   try {
-    const reports = await evaluateTransaction('getAllReports');
+    const fabricReports = await evaluateTransaction('getAllReports');
+    const reports = await mergePrioritas(fabricReports);
     res.json({
       total: reports.length,
       diproses: reports.filter(r => r.status === 'Investigasi' || r.status === 'Diverifikasi').length,
@@ -110,6 +127,13 @@ router.get('/stats', authMiddleware, roleGuard('admin'), async (req, res) => {
 router.get('/:reportId', authMiddleware, async (req, res) => {
   try {
     const report = await evaluateTransaction('getReport', req.params.reportId);
+    const dbRow = await Report.findOne({
+      attributes: ['prioritas'],
+      where: { reportId: req.params.reportId },
+    });
+    if (dbRow) {
+      report.prioritas = dbRow.prioritas || '';
+    }
     res.json(report);
   } catch (err) {
     res.status(404).json({ error: err.message });
@@ -119,25 +143,25 @@ router.get('/:reportId', authMiddleware, async (req, res) => {
 router.put('/:reportId/status', authMiddleware, roleGuard('admin'), async (req, res) => {
   try {
     const { status, prioritas } = req.body;
-    if (!status) {
-      return res.status(400).json({ error: 'Status is required' });
+    if (!status && !prioritas) {
+      return res.status(400).json({ error: 'Status or prioritas is required' });
     }
 
-    const result = await submitTransaction('updateReportStatus', req.params.reportId, status, req.user.userId);
+    let result = null;
+    const updateFields = { updatedBy: req.user.userId };
+
+    if (status) {
+      result = await submitTransaction('updateReportStatus', req.params.reportId, status, req.user.userId);
+      updateFields.status = status;
+    }
 
     if (prioritas) {
-      const report = await evaluateTransaction('getReport', req.params.reportId);
-      report.prioritas = prioritas;
-      report.updatedAt = new Date().toISOString();
-      await submitTransaction('createReport', req.params.reportId, JSON.stringify(report));
+      updateFields.prioritas = prioritas;
     }
 
-    await Report.update(
-      { status, updatedBy: req.user.userId, ...(prioritas ? { prioritas } : {}) },
-      { where: { reportId: req.params.reportId } }
-    );
+    await Report.update(updateFields, { where: { reportId: req.params.reportId } });
 
-    res.json(result);
+    res.json(result || { reportId: req.params.reportId, prioritas });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

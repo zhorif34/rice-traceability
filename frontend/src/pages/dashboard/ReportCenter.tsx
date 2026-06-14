@@ -77,6 +77,7 @@ const ReportCenter = () => {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedPriority, setSelectedPriority] = useState<string>("Sedang");
 
   const [form, setForm] = useState({
     batchId: "",
@@ -170,6 +171,18 @@ const ReportCenter = () => {
       setDetailOpen(false);
     } catch (err: any) {
       toast.error(err?.response?.data?.error || "Gagal memperbarui status");
+    }
+  };
+
+  const handleUpdatePriority = async (reportId: string, prioritas: string, currentStatus: string) => {
+    try {
+      await reportApi.updateStatus(reportId, currentStatus, prioritas);
+      toast.success(`Prioritas ${reportId} → ${prioritas}`);
+      setSelectedPriority(prioritas);
+      loadReports();
+      if (isAdmin) loadStats();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || "Gagal memperbarui prioritas");
     }
   };
 
@@ -359,7 +372,7 @@ const ReportCenter = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => { setSelectedReport(r); setDetailOpen(true); }}
+                                onClick={() => { setSelectedReport(r); setSelectedPriority(r.prioritas); setDetailOpen(true); }}
                               >
                                 <Eye className="w-4 h-4 mr-1" /> Lihat
                               </Button>
@@ -447,6 +460,23 @@ const ReportCenter = () => {
                             {s === "Investigasi" && <Search className="w-3 h-3 mr-1" />}
                             {s === "Selesai" && <CheckCircle2 className="w-3 h-3 mr-1" />}
                             {s}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground text-xs mb-2">Perbarui Prioritas Aduan</p>
+                      <div className="flex flex-wrap gap-2">
+                        {["Rendah", "Sedang", "Tinggi"].map(p => (
+                          <Button
+                            key={p}
+                            size="sm"
+                            variant={selectedPriority === p ? "default" : "outline"}
+                            onClick={() => handleUpdatePriority(selectedReport!.reportId, p, selectedReport!.status)}
+                            disabled={selectedPriority === p}
+                          >
+                            {p}
                           </Button>
                         ))}
                       </div>

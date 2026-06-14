@@ -20,7 +20,7 @@ function mapBatch(raw: any): BatchEntry {
       : data.volume_gkg_diterima_kg
         ? `${data.asal_petani_lokasi || ""} • ${data.volume_gkg_diterima_kg} kg`
         : data.volume_gkg_masuk_kg
-          ? `GKG ${data.volume_gkg_masuk_kg} kg • ${data.berat_beras_digiling || "-"} kg digiling`
+          ? `GKP ${data.volume_gkg_masuk_kg} kg • ${data.berat_beras_digiling || "-"} kg digiling`
           : data.volume_beras_dikirim_kg
             ? `${data.volume_beras_dikirim_kg} kg`
             : data.volume_dibeli_kg
