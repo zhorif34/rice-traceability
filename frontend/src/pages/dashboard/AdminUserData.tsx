@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Users } from "lucide-react";
 import api from "@/services/api";
 
-const entityLabels: Record<string, string> = { petani: "Petani", pengepul: "Pengepul", rmu: "RMU", distributor: "Distributor", bulog: "Bulog", retailer: "Pengecer", admin: "Admin" };
+const entityLabels: Record<string, string> = { petani: "Petani", pengepul: "Pengepul", rmu: "RMU", distributor: "Distributor", bulog: "Lembaga Logistik Pemerintah", retailer: "Pengecer", admin: "Admin" };
 const entityColors: Record<string, string> = { petani: "bg-green-100 text-green-800", pengepul: "bg-yellow-100 text-yellow-800", rmu: "bg-blue-100 text-blue-800", distributor: "bg-purple-100 text-purple-800", bulog: "bg-orange-100 text-orange-800", retailer: "bg-pink-100 text-pink-800", admin: "bg-gray-100 text-gray-800" };
 
 interface UserData {

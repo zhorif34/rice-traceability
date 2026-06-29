@@ -45,7 +45,7 @@ const DistributorDashboard = () => {
             <div className="space-y-2"><Label>Nomor PO</Label><Input value={form.poNumber} onChange={e => setForm({ ...form, poNumber: e.target.value })} required /></div>
              <div className="space-y-2"><Label>Volume Dikirim (kg)</Label><Input type="number" value={form.riceVolume} onChange={e => setForm({ ...form, riceVolume: e.target.value })} required /></div>
              <div className="space-y-2"><Label>Berat Beras Diterima (Kg)</Label><Input type="number" step="0.01" value={form.beratBerasDiterima} onChange={e => setForm({ ...form, beratBerasDiterima: e.target.value })} required /></div>
-            <div className="space-y-2"><Label>Tujuan</Label><Select value={form.destination} onValueChange={v => setForm({ ...form, destination: v })}><SelectTrigger><SelectValue placeholder="Pilih tujuan" /></SelectTrigger><SelectContent><SelectItem value="bulog">Bulog</SelectItem><SelectItem value="retailer">Pengecer</SelectItem></SelectContent></Select></div>
+            <div className="space-y-2"><Label>Tujuan</Label><Select value={form.destination} onValueChange={v => setForm({ ...form, destination: v })}><SelectTrigger><SelectValue placeholder="Pilih tujuan" /></SelectTrigger><SelectContent><SelectItem value="bulog">Lembaga Logistik Pemerintah</SelectItem><SelectItem value="retailer">Pengecer</SelectItem></SelectContent></Select></div>
             <div className="space-y-2"><Label>Tanggal Pengiriman</Label><Input type="date" value={form.dispatchDate} onChange={e => setForm({ ...form, dispatchDate: e.target.value })} required /></div>
           </CardContent>
         </Card>

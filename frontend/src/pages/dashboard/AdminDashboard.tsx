@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Search, Eye, Sprout, Truck, Factory, Building2, Warehouse, ShoppingBag, CheckCircle2, ShieldCheck, AlertTriangle, ExternalLink, Users } from "lucide-react";
 import api from "@/services/api";
 
-const entityLabels: Record<string, string> = { petani: "Petani", pengepul: "Pengepul", rmu: "RMU", distributor: "Distributor", bulog: "Bulog", retailer: "Pengecer" };
+const entityLabels: Record<string, string> = { petani: "Petani", pengepul: "Pengepul", rmu: "RMU", distributor: "Distributor", bulog: "Lembaga Logistik Pemerintah", retailer: "Pengecer" };
 const entityColors: Record<string, string> = { petani: "bg-green-100 text-green-800", pengepul: "bg-yellow-100 text-yellow-800", rmu: "bg-blue-100 text-blue-800", distributor: "bg-purple-100 text-purple-800", bulog: "bg-orange-100 text-orange-800", retailer: "bg-pink-100 text-pink-800" };
 const entityIcons: Record<string, any> = { petani: Sprout, pengepul: Truck, rmu: Factory, distributor: Building2, bulog: Warehouse, retailer: ShoppingBag };
 
@@ -48,7 +48,7 @@ const AdminDashboard = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">Manajemen Aduan Seluruh Entitas</h3>
-                  <p className="text-sm text-muted-foreground">Pantau dan kelola aduan dari Petani, Pengepul, RMU, Distributor, BULOG, Retailer, dan Konsumen</p>
+                  <p className="text-sm text-muted-foreground">Pantau dan kelola aduan dari Petani, Pengepul, RMU, Distributor, Lembaga Logistik Pemerintah, Retailer, dan Konsumen</p>
                 </div>
               </div>
               <Button variant="outline" size="sm" className="shrink-0" asChild>
@@ -98,7 +98,19 @@ const AdminDashboard = () => {
             const Icon = entityIcons[step.entityType] || Sprout;
             return (<div key={i} className="relative flex gap-4"><div className="w-16 h-16 rounded-xl border-2 flex items-center justify-center shrink-0 z-10 bg-background border-primary/20"><Icon className="w-7 h-7 text-primary" /></div>
               <div className="rounded-xl border p-4 flex-1"><div className="flex items-start justify-between mb-1"><h3 className="font-semibold">{entityLabels[step.entityType] || step.entityType}</h3><span className="text-xs text-muted-foreground">{step.createdAt ? new Date(step.createdAt).toLocaleDateString('id-ID') : ''}</span></div>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1">{step.data && Object.entries(step.data).filter(([k]) => k !== 'prev_batch_id').map(([key, val]: [string, any]) => (<div key={key} className="text-sm"><span className="text-muted-foreground">{key.replace(/_/g, ' ')}: </span><span className="font-medium">{String(val)}</span></div>))}</div></div></div>);
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1">{step.data && Object.entries(step.data).filter(([k]) => k !== 'prev_batch_id').map(([key, val]: [string, any]) => {
+                  const kgFields = new Set(['volume_gkg_kg', 'hasil_panen_per_ha', 'volume_gkg_diterima_kg', 'berat_netto', 'berat_beras_digiling', 'volume_gkg_masuk_kg', 'berat_beras_diterima', 'volume_beras_dikirim_kg', 'volume_dijual_kg', 'volume_dibeli_kg', 'berat_beras_dibeli']);
+                  const pctFields = new Set(['butir_kepala', 'butir_menir', 'butir_patah', 'derajat_sosoh', 'kadar_air', 'kadar_air_masuk', 'butir_berwarna', 'butir_rusak', 'butir_kapur', 'benda_asing']);
+                  const rpFields = new Set(['harga_satuan_rp_per_kg', 'harga_eceran']);
+                  const countFields = new Set(['butir_gabah']);
+                  let displayVal = String(val);
+                  let suffix = '';
+                  if (rpFields.has(key)) displayVal = `Rp. ${displayVal}`;
+                  else if (kgFields.has(key)) suffix = ' kg';
+                  else if (pctFields.has(key)) suffix = ' %';
+                  else if (countFields.has(key)) suffix = ' butir/100g';
+                  return (<div key={key} className="text-sm"><span className="text-muted-foreground">{key.replace(/_/g, ' ')}: </span><span className="font-medium">{displayVal}{suffix}</span></div>);
+                })}</div></div></div>);
           })}</div></div>)}
         </DialogContent>
       </Dialog>

@@ -5,7 +5,7 @@ const steps = [
   { icon: Truck, label: "Pengepul", sub: "Collector" },
   { icon: Factory, label: "RMU", sub: "Penggilingan" },
   { icon: Building2, label: "Distributor", sub: "Distribusi" },
-  { icon: Warehouse, label: "Bulog", sub: "Gudang" },
+  { icon: Warehouse, label: "LLP", sub: "Logistik Pemerintah" },
   { icon: ShoppingBag, label: "Pengecer", sub: "Titik Penjualan" },
 ];
 

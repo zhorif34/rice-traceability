@@ -30,15 +30,15 @@ const BulogDashboard = () => {
       });
       const batchId = res.data.batchId;
       await refresh();
-      toast.success(`Batch ID: ${batchId}`, { description: "Data Bulog dicatat." });
+      toast.success(`Batch ID: ${batchId}`, { description: "Data Lembaga Logistik Pemerintah dicatat." });
       if (res.data.qrCode) { const w = window.open('', '_blank'); if (w) { w.document.write(`<img src="${res.data.qrCode}" />`); w.document.title = "QR Code"; } }
     } catch (err: any) { toast.error(err.response?.data?.error || "Gagal."); } finally { setLoading(false); }
   };
 
   return (
-    <DashboardLayout title="Dasbor Bulog" entityLabel="Bulog">
+    <DashboardLayout title="Dasbor Lembaga Logistik Pemerintah" entityLabel="Lembaga Logistik Pemerintah">
       <div className="space-y-6">
-        <BatchHistoryCard batches={batches} entityLabel="Bulog" />
+        <BatchHistoryCard batches={batches} entityLabel="Lembaga Logistik Pemerintah" />
       </div>
       <form onSubmit={handleSubmit} className="space-y-6 mt-6">
         <Card><CardHeader><CardTitle>Batch ID dari RMU/Distributor</CardTitle></CardHeader><CardContent><div className="space-y-2"><Label>ID Batch (RMU atau Distributor)</Label><Input placeholder="cth. RMU_... atau DISTRIBUTOR_..." value={prevBatchId} onChange={e => setPrevBatchId(e.target.value)} required /></div></CardContent></Card>

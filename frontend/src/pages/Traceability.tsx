@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import api from "@/services/api";
 
 const entityIcons: Record<string, any> = { petani: Sprout, pengepul: Truck, rmu: Factory, distributor: Building2, bulog: Warehouse, retailer: ShoppingBag };
-const entityLabels: Record<string, string> = { petani: "Petani", pengepul: "Pengepul", rmu: "RMU", distributor: "Distributor", bulog: "Bulog", retailer: "Pengecer" };
+const entityLabels: Record<string, string> = { petani: "Petani", pengepul: "Pengepul", rmu: "RMU", distributor: "Distributor", bulog: "Lembaga Logistik Pemerintah", retailer: "Pengecer" };
 
 const Traceability = () => {
   const [batchId, setBatchId] = useState("");
@@ -55,7 +55,7 @@ const Traceability = () => {
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4"><span className="text-gradient">Keterlacakan</span> Beras</h1>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">Masukkan ID Batch atau pindai kode QR untuk melihat perjalanan rantai pasok beras Anda.</p>
             <p className="text-muted-foreground text-sm max-w-lg mx-auto mt-3">
-              Konsumen dapat menelusuri beras yang dibeli dari <span className="font-semibold text-primary">Distributor</span>, <span className="font-semibold text-primary">Bulog</span>, atau <span className="font-semibold text-primary">Pengecer</span>.
+              Konsumen dapat menelusuri beras yang dibeli dari <span className="font-semibold text-primary">Distributor</span>, <span className="font-semibold text-primary">Lembaga Logistik Pemerintah</span>, atau <span className="font-semibold text-primary">Pengecer</span>.
               Pindai kode QR dari kemasan atau gunakan <span className="font-medium">Input Manual</span> untuk memasukkan ID Batch.
             </p>
           </div>
@@ -104,12 +104,17 @@ const Traceability = () => {
                           <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                             {step.data && Object.entries(step.data).filter(([k]) => k !== 'prev_batch_id').map(([key, val]: [string, any]) => {
                               const kgFields = new Set(['volume_gkg_kg', 'hasil_panen_per_ha', 'volume_gkg_diterima_kg', 'berat_netto', 'berat_beras_digiling', 'volume_gkg_masuk_kg', 'berat_beras_diterima', 'volume_beras_dikirim_kg', 'volume_dijual_kg', 'volume_dibeli_kg', 'berat_beras_dibeli']);
-                              const pctFields = new Set(['butir_kepala', 'butir_menir', 'butir_patah', 'derajat_sosoh', 'kadar_air', 'kadar_air_masuk']);
+                              const pctFields = new Set(['butir_kepala', 'butir_menir', 'butir_patah', 'derajat_sosoh', 'kadar_air', 'kadar_air_masuk', 'butir_berwarna', 'butir_rusak', 'butir_kapur', 'benda_asing']);
+                              const rpFields = new Set(['harga_satuan_rp_per_kg', 'harga_eceran']);
+                              const countFields = new Set(['butir_gabah']);
+                              let displayVal = String(val);
                               let suffix = '';
-                              if (kgFields.has(key)) suffix = ' kg';
+                              if (rpFields.has(key)) displayVal = `Rp. ${displayVal}`;
+                              else if (kgFields.has(key)) suffix = ' kg';
                               else if (pctFields.has(key)) suffix = ' %';
+                              else if (countFields.has(key)) suffix = ' butir/100g';
                               return (
-                                <div key={key} className="text-sm"><span className="text-muted-foreground">{key.replace(/_/g, ' ')}: </span><span className="font-medium text-foreground">{String(val)}{suffix}</span></div>
+                                <div key={key} className="text-sm"><span className="text-muted-foreground">{key.replace(/_/g, ' ')}: </span><span className="font-medium text-foreground">{displayVal}{suffix}</span></div>
                               );
                             })}
                           </div>

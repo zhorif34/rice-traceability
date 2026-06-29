@@ -13,7 +13,7 @@ const entities = [
   { value: "pengepul", label: "Pengepul" },
   { value: "rmu", label: "RMU (Penggilingan Padi)" },
   { value: "distributor", label: "Distributor" },
-  { value: "bulog", label: "Bulog" },
+  { value: "bulog", label: "Lembaga Logistik Pemerintah" },
   { value: "retailer", label: "Pengecer" },
   { value: "admin", label: "Admin" },
 ];

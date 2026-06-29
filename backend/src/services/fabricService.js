@@ -61,6 +61,11 @@ const SNI_THRESHOLDS = {
   butir_kepala: { min: 75 },
   butir_patah: { max: 22 },
   butir_menir: { max: 3 },
+  butir_berwarna: { max: 3 },
+  butir_rusak: { max: 3 },
+  butir_kapur: { max: 3 },
+  benda_asing: { max: 0.03 },
+  butir_gabah: { max: 3 },
 };
 
 const VOLUME_FIELDS = {
@@ -243,6 +248,21 @@ function mockCreateBatch(batchId, entityType, dataJson, validateSNI) {
     }
     if (data.butir_menir != null && parseFloat(data.butir_menir) > SNI_THRESHOLDS.butir_menir.max) {
       errors.push(`Butir menir harus <= ${SNI_THRESHOLDS.butir_menir.max}%`);
+    }
+    if (data.butir_berwarna != null && parseFloat(data.butir_berwarna) > SNI_THRESHOLDS.butir_berwarna.max) {
+      errors.push(`Butir berwarna harus <= ${SNI_THRESHOLDS.butir_berwarna.max}%`);
+    }
+    if (data.butir_rusak != null && parseFloat(data.butir_rusak) > SNI_THRESHOLDS.butir_rusak.max) {
+      errors.push(`Butir rusak harus <= ${SNI_THRESHOLDS.butir_rusak.max}%`);
+    }
+    if (data.butir_kapur != null && parseFloat(data.butir_kapur) > SNI_THRESHOLDS.butir_kapur.max) {
+      errors.push(`Butir kapur harus <= ${SNI_THRESHOLDS.butir_kapur.max}%`);
+    }
+    if (data.benda_asing != null && parseFloat(data.benda_asing) > SNI_THRESHOLDS.benda_asing.max) {
+      errors.push(`Benda asing harus <= ${SNI_THRESHOLDS.benda_asing.max}%`);
+    }
+    if (data.butir_gabah != null && parseFloat(data.butir_gabah) > SNI_THRESHOLDS.butir_gabah.max) {
+      errors.push(`Butir gabah harus <= ${SNI_THRESHOLDS.butir_gabah.max} butir per 100 gram`);
     }
     if (errors.length > 0) {
       throw new Error(`SNI validation failed: ${errors.join('; ')}`);

@@ -15,7 +15,7 @@ const RmuDashboard = () => {
   const [recv, setRecv] = useState({ gkg: "", batch: "", moisture: "", visual: "", date: "", supplier: "" });
   const [pack, setPack] = useState({ type: "", weight: "", date: "", batchNo: "", sniCert: "" });
   const [beratBerasDigiling, setBeratBerasDigiling] = useState("");
-  const [sni, setSni] = useState({ sosoh: "", moisture: "", head: "", broken: "", menir: "" });
+  const [sni, setSni] = useState({ sosoh: "", moisture: "", head: "", broken: "", menir: "", berwarna: "", rusak: "", kapur: "", asing: "", gabah: "" });
   const [loading, setLoading] = useState(false);
   const { batches, refresh } = useBatchHistory();
 
@@ -32,6 +32,9 @@ const RmuDashboard = () => {
         kadar_air: sni.moisture, derajat_sosoh: sni.sosoh || undefined,
         butir_kepala: sni.head || undefined, butir_patah: sni.broken || undefined,
         butir_menir: sni.menir || undefined,
+        butir_berwarna: sni.berwarna || undefined, butir_rusak: sni.rusak || undefined,
+        butir_kapur: sni.kapur || undefined, benda_asing: sni.asing || undefined,
+        butir_gabah: sni.gabah || undefined,
       });
       const batchId = res.data.batchId;
       await refresh();
@@ -76,6 +79,11 @@ const RmuDashboard = () => {
             <div className="space-y-2"><Label>Butir Kepala (%)</Label><Input type="number" step="0.1" value={sni.head} onChange={e => setSni({ ...sni, head: e.target.value })} /></div>
             <div className="space-y-2"><Label>Butir Patah (%)</Label><Input type="number" step="0.1" value={sni.broken} onChange={e => setSni({ ...sni, broken: e.target.value })} /></div>
             <div className="space-y-2"><Label>Butir Menir (%)</Label><Input type="number" step="0.1" value={sni.menir} onChange={e => setSni({ ...sni, menir: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Butir Berwarna (%)</Label><Input type="number" step="0.1" value={sni.berwarna} onChange={e => setSni({ ...sni, berwarna: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Butir Rusak (%)</Label><Input type="number" step="0.1" value={sni.rusak} onChange={e => setSni({ ...sni, rusak: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Butir Kapur (%)</Label><Input type="number" step="0.1" value={sni.kapur} onChange={e => setSni({ ...sni, kapur: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Benda Asing (%)</Label><Input type="number" step="0.01" value={sni.asing} onChange={e => setSni({ ...sni, asing: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Butir Gabah (butir/100g)</Label><Input type="number" step="0.1" value={sni.gabah} onChange={e => setSni({ ...sni, gabah: e.target.value })} /></div>
           </CardContent>
         </Card>
         <Button type="submit" size="lg" disabled={loading}>{loading ? "Memproses..." : "Kirim & Validasi SNI"}</Button>

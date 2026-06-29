@@ -234,6 +234,11 @@ class RiceTraceabilityContract extends Contract {
       butir_kepala: data.butir_kepala,
       butir_patah: data.butir_patah,
       butir_menir: data.butir_menir,
+      butir_berwarna: data.butir_berwarna,
+      butir_rusak: data.butir_rusak,
+      butir_kapur: data.butir_kapur,
+      benda_asing: data.benda_asing,
+      butir_gabah: data.butir_gabah,
     });
 
     if (!sniResult.valid) {
@@ -521,7 +526,7 @@ class RiceTraceabilityContract extends Contract {
 
   async getReportsByPelapor(ctx, pelapor) {
     const queryString = JSON.stringify({
-      selector: { pelapor },
+      selector: { pelapor }, 
     });
     const iterator = await ctx.stub.getQueryResult(queryString);
     const results = [];

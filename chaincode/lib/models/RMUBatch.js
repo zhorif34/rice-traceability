@@ -21,6 +21,11 @@ class RMUBatch {
       butir_kepala: data.butir_kepala,
       butir_patah: data.butir_patah,
       butir_menir: data.butir_menir,
+      butir_berwarna: data.butir_berwarna,
+      butir_rusak: data.butir_rusak,
+      butir_kapur: data.butir_kapur,
+      benda_asing: data.benda_asing,
+      butir_gabah: data.butir_gabah,
     };
   }
 }

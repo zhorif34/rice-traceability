@@ -43,7 +43,7 @@ echo "=== Step 3: RMU creates batch (with SNI validation) ==="
 RMU_BRES=$(curl -s -X POST $API/rmu/batch \
   -H "Authorization: Bearer $RMU_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\"prev_batch_id\":\"$COLLECTOR_BATCH\",\"volume_gkg_masuk_kg\":\"5000\",\"berat_beras_digiling\":\"3200\",\"kadar_air_masuk\":\"18\",\"pemeriksaan_visual\":\"Lolos\",\"tanggal_penerimaan\":\"2025-05-13\",\"supplier_id\":\"SUP-001\",\"jenis_kemasan\":\"Karung 25kg\",\"berat_netto\":\"25\",\"tanggal_pengemasan\":\"2025-05-14\",\"nomor_batch_beras\":\"RICE-2025-001\",\"sertifikat_mutu_sni\":\"SNI-2025-001\",\"kadar_air\":\"13\",\"derajat_sosoh\":\"96\",\"butir_kepala\":\"80\",\"butir_patah\":\"18\",\"butir_menir\":\"2\"}")
+  -d "{\"prev_batch_id\":\"$COLLECTOR_BATCH\",\"volume_gkg_masuk_kg\":\"5000\",\"berat_beras_digiling\":\"3200\",\"kadar_air_masuk\":\"18\",\"pemeriksaan_visual\":\"Lolos\",\"tanggal_penerimaan\":\"2025-05-13\",\"supplier_id\":\"SUP-001\",\"jenis_kemasan\":\"Karung 25kg\",\"berat_netto\":\"25\",\"tanggal_pengemasan\":\"2025-05-14\",\"nomor_batch_beras\":\"RICE-2025-001\",\"sertifikat_mutu_sni\":\"SNI-2025-001\",\"kadar_air\":\"13\",\"derajat_sosoh\":\"96\",\"butir_kepala\":\"80\",\"butir_patah\":\"18\",\"butir_menir\":\"2\",\"butir_berwarna\":\"1\",\"butir_rusak\":\"1\",\"butir_kapur\":\"1\",\"benda_asing\":\"0.01\",\"butir_gabah\":\"1\"}")
 echo "$RMU_BRES" | python3 -m json.tool
 RMU_BATCH=$(echo $RMU_BRES | python3 -c "import sys,json;print(json.load(sys.stdin)['batchId'])")
 echo "RMU Batch ID: $RMU_BATCH"
