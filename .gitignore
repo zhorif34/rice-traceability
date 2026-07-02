@@ -20,3 +20,7 @@ deepseek_text_*
 chaincode/test-tls.js
 backend/fabric/crypto/
 Coding Batch ID History.txt
+chaincode/config_block.*
+chaincode/config.pb
+chaincode/modified_config.pb
+chaincode/*_update.*
