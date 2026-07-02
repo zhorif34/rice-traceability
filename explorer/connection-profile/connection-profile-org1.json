@@ -6,7 +6,7 @@
     "tlsEnable": true,
     "adminCredential": {
       "id": "exploreradmin",
-      "password": "exploreradminpw"
+      "password": "${EXPLORER_ADMIN_PASSWORD:-exploreradminpw}"
     },
     "enableAuthentication": false,
     "organization": "Org1MSP",

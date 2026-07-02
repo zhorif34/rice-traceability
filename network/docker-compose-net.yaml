@@ -62,7 +62,7 @@ services:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=${COUCHDB_PASSWORD:-adminpw}
       - CORE_PEER_CHAINCODEDEV=true
       - CORE_CHAINCODE_MODE=dev
     volumes:
@@ -81,7 +81,7 @@ services:
     image: couchdb:3.3.3
     environment:
       - COUCHDB_USER=admin
-      - COUCHDB_PASSWORD=adminpw
+      - COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-adminpw}
     ports:
       - 5984:5984
     networks:
@@ -92,7 +92,7 @@ services:
     image: couchdb:3.3.3
     environment:
       - COUCHDB_USER=admin
-      - COUCHDB_PASSWORD=adminpw
+      - COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-adminpw}
     ports:
       - "6984:5984"
     networks:
@@ -124,7 +124,7 @@ services:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=${COUCHDB_PASSWORD:-adminpw}
     volumes:
       - ./organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp:/etc/hyperledger/fabric/msp
       - ./organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls:/etc/hyperledger/fabric/tls
@@ -188,7 +188,7 @@ services:
     environment:
       - DATABASE_DATABASE=fabricexplorer
       - DATABASE_USERNAME=hppoc
-      - DATABASE_PASSWORD=password
+      - DATABASE_PASSWORD=${EXPLORER_DB_PASSWORD:-password}
     healthcheck:
       test: "pg_isready -h localhost -p 5432 -q -U postgres"
       interval: 5s
@@ -206,7 +206,7 @@ services:
       - DATABASE_HOST=explorerdb.mynetwork.com
       - DATABASE_DATABASE=fabricexplorer
       - DATABASE_USERNAME=hppoc
-      - DATABASE_PASSWD=password
+      - DATABASE_PASSWD=${EXPLORER_DB_PASSWORD:-password}
       - LOG_LEVEL_APP=debug
       - LOG_LEVEL_DB=debug
       - LOG_LEVEL_CONSOLE=debug

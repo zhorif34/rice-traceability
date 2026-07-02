@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = '24h';
 
 async function register(email, password, role, entityName) {

@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: rice_traceability
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
       - "5432:5432"
     volumes:
@@ -22,7 +22,7 @@ services:
     image: dpage/pgadmin4:latest
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
     ports:
       - "5050:80"
     depends_on:
@@ -44,8 +44,8 @@ services:
       DB_PORT: 5432
       DB_NAME: rice_traceability
       DB_USER: postgres
-      DB_PASSWORD: postgres
-      JWT_SECRET: ${JWT_SECRET:-dev_secret_change_in_production}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET}
       FABRIC_CHANNEL: mychannel
       FABRIC_CHAINCODE_NAME: riceTraceability
       FABRIC_MOCK_MODE: false
@@ -131,7 +131,7 @@ services:
     environment:
       DATABASE_DATABASE: fabricexplorer
       DATABASE_USERNAME: hppoc
-      DATABASE_PASSWORD: password
+      DATABASE_PASSWORD: ${EXPLORER_DB_PASSWORD:-password}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U hppoc -d fabricexplorer"]
       interval: 5s
@@ -153,7 +153,7 @@ services:
       - DATABASE_HOST=explorer-db
       - DATABASE_DATABASE=fabricexplorer
       - DATABASE_USERNAME=hppoc
-      - DATABASE_PASSWD=password
+      - DATABASE_PASSWD=${EXPLORER_DB_PASSWORD:-password}
       - LOG_LEVEL_APP=info
     depends_on:
       explorer-db:
