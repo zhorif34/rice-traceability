@@ -1,6 +1,5 @@
 version: "3"
 agent:
-    authtoken: ${NGROK_AUTHTOKEN}
     log: stdout
 tunnels:
     app:
